@@ -3843,7 +3843,6 @@ const server = http.createServer((req, res) => {
         avatarUrl: "/global/main/logo/144x144.png"
       }
     };
-    console.log(`[MAIN WALLET ASSETS INFO] Serving balance: GHS ${bp.balanceDisplay} (${bp.pesewas} pesewas) for ${pathname}`);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
@@ -3890,7 +3889,6 @@ const server = http.createServer((req, res) => {
         vaultBalance: 0
       }
     };
-    console.log(`[GAME WALLET INFO] Serving balance: GHS ${bp.balanceDisplay} for ${pathname}`);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
@@ -3934,7 +3932,6 @@ const server = http.createServer((req, res) => {
         }
       }
     };
-    console.log(`[WITHDRAW INFO] Serving withdrawable balance: GHS ${bp.balanceDisplay} (${bp.pesewas} pesewas) for ${pathname}`);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
