@@ -1,0 +1,1 @@
+var e={data(){return{showAddMoneyBtnLoader:!1,timeout:null}},methods:{showAddMoneyLoader(e){clearTimeout(this.timeout),this.showAddMoneyBtnLoader=!0,this.timeout=setTimeout(()=>{this.showAddMoneyBtnLoader=!1,typeof e==`function`&&e()},2e3)}}};export{e as t};

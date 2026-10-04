@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/rain_upcoming-C5Cm8pOY.svg`;export{e as t};

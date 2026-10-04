@@ -1,0 +1,1 @@
+function e({module:e,moduleName:t,store:n}){let r=n._modules.root._children[t]!==void 0,i=n.state[t];r||n.registerModule(t,e,{preserveState:i})}export{e as t};

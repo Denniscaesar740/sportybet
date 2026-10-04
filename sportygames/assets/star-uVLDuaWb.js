@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/star-D95xs6dP.webp`;export{e as t};

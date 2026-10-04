@@ -1,0 +1,18 @@
+{
+  "bizCode": 10000,
+  "data": {
+    "enabled": false,
+    "rewards": [],
+    "tasks": [],
+    "uiConfig": {
+      "depositExitIntentBottomSheetEnabled": false,
+      "depositFloatingIconAzMenuEnabled": false,
+      "depositFloatingIconGameLobbyEnabled": false,
+      "depositFloatingIconIvLobbyEnabled": false,
+      "depositIconEnabled": false,
+      "popupAfterRegistrationEnabled": [],
+      "storyEnabled": false
+    }
+  },
+  "message": "Success"
+}

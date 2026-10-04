@@ -1,0 +1,1 @@
+var e={sg_lobby_banner:{banner_text:`BannerText`}};export{e as t};

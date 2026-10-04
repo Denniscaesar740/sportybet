@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/dice-logo-CRAB2lt7.png`;export{e as t};

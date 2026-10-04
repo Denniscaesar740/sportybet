@@ -1,0 +1,1 @@
+function e(e,t=`playNowClicked`,n,r={},i=`win_notification`){if(!e)return;let a={gameName:e.gameName,launchTrigger:n||`unset`,launchUrl:e.launchUrl||`unset`,notificationType:e.type||i,...r};window._ga4Event(t,a)}export{e as t};

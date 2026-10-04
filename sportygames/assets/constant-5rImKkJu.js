@@ -1,0 +1,1 @@
+import{r as e}from"./rolldown-runtime-DAXXjFlN.js";var t=e({rtpValue:()=>n}),n=`99.75%`;export{n,t};

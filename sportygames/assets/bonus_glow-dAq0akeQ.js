@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/bonus_glow-WCNFMD4U.png`;export{e as t};

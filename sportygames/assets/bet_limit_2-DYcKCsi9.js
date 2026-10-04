@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/bet_limit_1-CJ8MXnUp.png`,t=`/sportygames/assets/bet_limit_2-D99PPve-.png`;export{e as n,t};

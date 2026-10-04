@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/add-C8Fm1_Aa.svg`,t=`/sportygames/assets/chat_brand1-CDZUF9w3.png`,n=`/sportygames/assets/paint_brush-ByZUQo_I.png`,r=`/sportygames/assets/revamped_arrow_down-DSlOKsZj.svg`,i=`/sportygames/assets/revamped_arrow_up-BgY6lFjU.svg`,a=`/sportygames/assets/revamped_gift_cross-Vl5X4S7x.svg`;export{t as a,n as i,i as n,e as o,r,a as t};

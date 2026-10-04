@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/jackpot_win-DzcUqcxH.png`,t=`/sportygames/assets/you_win-CEb7oTFv.png`;export{e as n,t};

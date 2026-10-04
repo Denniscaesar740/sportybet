@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ham-3xfxRsFo.svg`;export{e as t};

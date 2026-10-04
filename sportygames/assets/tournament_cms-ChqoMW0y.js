@@ -1,0 +1,1 @@
+var e={sg_tournament:{place_bet:`Place your first bet`}};export{e as t};

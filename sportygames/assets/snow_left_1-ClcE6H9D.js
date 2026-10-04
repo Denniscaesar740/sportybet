@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/snow_right_1-DbcRbFB6.png`,t=`/sportygames/assets/snow_snow_part_2-CwzHbshv.png`,n=`/sportygames/assets/snow_left_1-DxBMPkpD.png`;export{t as n,e as r,n as t};

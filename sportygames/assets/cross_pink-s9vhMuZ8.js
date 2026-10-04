@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/cross_pink-BD52YKvi.png`;export{e as t};

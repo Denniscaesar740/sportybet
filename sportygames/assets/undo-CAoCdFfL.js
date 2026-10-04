@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/undo-DFWly6kR.png`;export{e as t};

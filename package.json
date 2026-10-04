@@ -1,0 +1,17 @@
+{
+  "name": "sportybet-local-clone",
+  "version": "1.0.0",
+  "description": "SportyBet offline local clone with self-contained assets and mock APIs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "express": "^4.21.2",
+    "serverless-http": "^3.2.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

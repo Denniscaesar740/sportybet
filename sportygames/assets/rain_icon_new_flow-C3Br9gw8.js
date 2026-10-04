@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/rain_icon_new_flow-BNBFZwEd.svg`;export{e as t};

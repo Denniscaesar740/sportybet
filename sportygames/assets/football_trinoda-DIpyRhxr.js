@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/WC_BR_Flag-CoXyyEoW.webp`,t=`/sportygames/assets/WC_GH_Flag-CxK96yCN.webp`,n=`/sportygames/assets/WC_MX_Flag-CP9loujL.webp`,r=`/sportygames/assets/WC_ZA_Flag-onGyWwUw.webp`,i=`/sportygames/assets/football_trinoda-BScF7_DK.webp`;export{e as a,t as i,r as n,n as r,i as t};

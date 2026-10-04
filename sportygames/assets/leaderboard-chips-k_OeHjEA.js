@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/leaderboard-chips-BYBNUZFN.png`;export{e as t};

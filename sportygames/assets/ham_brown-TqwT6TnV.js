@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/game_title-D_frXw2O.png`,t=`/sportygames/assets/caribbean_text_brown-gUe70pY7.webp`,n=`/sportygames/assets/chat-YKK3hG2F.png`,r=`/sportygames/assets/ham_brown-BGy7rlQ3.svg`;export{e as i,n,t as r,r as t};

@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/last_hero_logo-B6NwTNrF.png`;export{e as t};

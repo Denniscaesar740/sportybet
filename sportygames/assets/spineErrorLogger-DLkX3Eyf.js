@@ -1,0 +1,1 @@
+import{Vt as e}from"./utilities-DhDDLzAx.js";function t(e){if(e instanceof Error)return e;let t=``;try{let n=JSON.stringify(e);n&&n!==`{}`&&n!==`null`&&(t=n)}catch{}if(!t)try{t=Object.prototype.toString.call(e)}catch{t=typeof e}return Error(`SpinePlayer error: ${t}`)}function n(n,r){let i=t(n);e.pushError(i,{message:`SpinePlayer`,...r})}export{n as t};

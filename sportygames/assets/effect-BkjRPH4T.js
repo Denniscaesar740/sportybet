@@ -1,0 +1,1 @@
+import{r as e}from"./rolldown-runtime-DAXXjFlN.js";var t=e({default:()=>n}),n=`/sportygames/effect-8dXYyQtb.atlas`;export{t as n,n as t};

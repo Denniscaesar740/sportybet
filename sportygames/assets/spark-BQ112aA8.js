@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/spark-DvY5Bmid.gif`;export{e as t};

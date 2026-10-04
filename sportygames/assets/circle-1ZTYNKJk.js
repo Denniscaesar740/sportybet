@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/circle-C2lwwu-n.svg`;export{e as t};

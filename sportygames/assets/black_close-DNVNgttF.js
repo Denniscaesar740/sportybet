@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/black_close-blJaaRIM.svg`;export{e as t};

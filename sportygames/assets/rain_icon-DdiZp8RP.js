@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/rain_icon-lGY2vLuz.png`;export{e as t};

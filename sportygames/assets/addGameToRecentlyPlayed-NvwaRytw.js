@@ -1,0 +1,1 @@
+import{ur as e}from"./utilities-DhDDLzAx.js";var t=()=>{let t=+window.sessionStorage.getItem(`recentlyPlayedGameId`);t&&(e(t,!0),window.sessionStorage.removeItem(`recentlyPlayedGameId`))},n=()=>{t()};export{n,t};

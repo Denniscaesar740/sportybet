@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ham_how_to_play-CFLHc0hh.png`;export{e as t};

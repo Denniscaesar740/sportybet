@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/card_sporty-Bq8ZkjzH.svg`,t=`/sportygames/assets/coupon_free_gift_disable-VtAjJGhC.svg`,n=`/sportygames/assets/how_to_play_fbg_3-DvD1BlaK.png`;export{t as n,e as r,n as t};

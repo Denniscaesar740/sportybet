@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/bot_avatar-CR28NmBy.png`;export{e as t};

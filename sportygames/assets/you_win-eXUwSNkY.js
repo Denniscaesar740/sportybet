@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/you_win-CUKPNdim.png`;export{e as t};

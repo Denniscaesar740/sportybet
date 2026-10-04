@@ -1,0 +1,49 @@
+{
+  "active": true,
+  "sportId": "sr:sport:1-1",
+  "name": "BuildAndGo",
+  "bdMinStake": 1000,
+  "bdMaxStake": 750000000,
+  "minStake": "0.10",
+  "maxStake": "75000.00",
+  "maxPayout": "1200000",
+  "keepBetLimit": 2147483647,
+  "gift": true,
+  "eventListPageDefaultSpecifier": { "ou": "near", "hd": "near" },
+  "bonusType": 0,
+  "gameTypes": [
+    { "id": "250417152500gtp000000001", "name": "Quick Game", "type": "qk" }
+  ],
+  "marketCategories": [],
+  "multiBetBonus": {
+    "enable": false,
+    "qualifyingOddsLimit": 0,
+    "minSelections": 0,
+    "maxSelections": 0,
+    "bonusRatios": []
+  },
+  "dynamicMultiBetBonus": {
+    "enable": false,
+    "factor": 0,
+    "qualifyingOddsLimit": 0,
+    "bonusRatios": []
+  },
+  "feature": {
+    "flexibet": {
+      "status": 2,
+      "display": 1,
+      "oddsKey": 1.0,
+      "flexibleMinOdds": 1.0
+    },
+    "onecut": { "status": 2 },
+    "oddsFilter": {
+      "status": 0,
+      "presetRange": [],
+      "shortcut": { "risky": 0.0, "simple": 0.0 }
+    },
+    "betRecommendation": { "status": 0, "criteria": [] }
+  },
+  "animationMode": "both",
+  "speedControllerConfig": { "enable": false },
+  "statsEnable": false
+}

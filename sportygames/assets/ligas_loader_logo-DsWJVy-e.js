@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ligas_loader_logo-C9jokBCK.webp`;export{e as t};

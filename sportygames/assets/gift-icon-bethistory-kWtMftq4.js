@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/gift-icon-bethistory-sbtJOB7s.png`;export{e as t};

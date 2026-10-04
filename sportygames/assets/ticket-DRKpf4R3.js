@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ticket-DEpt1ngN.png`;export{e as t};

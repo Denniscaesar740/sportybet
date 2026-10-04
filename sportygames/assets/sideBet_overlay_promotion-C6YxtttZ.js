@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/sideBet_overlay_promotion-KfH4VTlJ.png`;export{e as t};

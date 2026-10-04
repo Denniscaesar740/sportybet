@@ -1,0 +1,1 @@
+import{t as e}from"./rolldown-runtime-DAXXjFlN.js";import{t}from"./_baseClone-BbaoNeBv.js";var n=e(((e,n)=>{var r=t(),i=1,a=4;function o(e){return r(e,i|a)}n.exports=o}));export{n as t};

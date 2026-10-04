@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/low_balance-DSSJ9hDW.png`;export{e as t};

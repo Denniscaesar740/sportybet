@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/chip_broken-Ck_S5Yre.webp`;export{e as t};

@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/chat-DK_pZZiF.png`;export{e as t};

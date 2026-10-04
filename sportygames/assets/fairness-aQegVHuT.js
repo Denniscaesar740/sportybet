@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/fairness-Pu_HJpki.png`;export{e as t};

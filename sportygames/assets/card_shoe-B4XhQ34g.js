@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/card_shoe-CRja9bAF.png`;export{e as t};

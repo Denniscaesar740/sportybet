@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/cross_white-CWx1LpQR.svg`;export{e as t};

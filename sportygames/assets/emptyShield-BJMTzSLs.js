@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/emptyShield-CSneFqGz.svg`;export{e as t};

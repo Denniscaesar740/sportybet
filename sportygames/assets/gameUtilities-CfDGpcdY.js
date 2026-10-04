@@ -1,0 +1,1 @@
+import{t as e}from"./utilities-DhDDLzAx.js";import{ht as t,mt as n}from"./constant-B94I4plG.js";var r=({currency:r,amount:i,count:a=``,confirmStatus:o=n.SINGLE})=>t[o].replace(`{currency}`,e(r)).replace(`{amount}`,i.toString()).replace(`{count}`,a.toString());export{r as t};

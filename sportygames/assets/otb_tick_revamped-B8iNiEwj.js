@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/otb_cross_revamped-DiX9MfQz.svg`,t=`/sportygames/assets/otb_tick_revamped-D8dpHFxP.svg`;export{e as n,t};

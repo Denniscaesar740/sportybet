@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/grey-DIOInKTc.svg`;export{e as t};

@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/crown_bronze-q49bcEhS.png`,t=`/sportygames/assets/crown_gold-DDE-kUjq.png`,n=`/sportygames/assets/crown_silver-B6PjvOJs.png`;export{t as n,e as r,n as t};

@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/chevron_left-HkLI5NLn.svg`,t=`/sportygames/assets/chevron_right-DN61xhdp.svg`;export{e as n,t};

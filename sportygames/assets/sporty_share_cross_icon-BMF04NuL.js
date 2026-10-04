@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/sporty_share_cross_icon-BEiPkjpF.svg`;export{e as t};

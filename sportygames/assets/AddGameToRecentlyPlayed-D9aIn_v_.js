@@ -1,0 +1,1 @@
+import{n as e,t}from"./addGameToRecentlyPlayed-NvwaRytw.js";var n={mounted(){e()},methods:{addGameToRecentlyPlayed:t}};export{n as t};

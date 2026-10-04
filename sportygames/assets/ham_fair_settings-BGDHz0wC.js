@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ham_fair_settings-CduRU5Dy.png`;export{e as t};

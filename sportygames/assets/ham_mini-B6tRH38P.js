@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ham_mini-D7hoyWU6.svg`;export{e as t};

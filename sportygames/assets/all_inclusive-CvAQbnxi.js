@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/all_inclusive-ZTdhhKw1.png`;export{e as t};

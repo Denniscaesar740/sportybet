@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script>
+      // Patch postMessage to prevent cross-origin errors in local dev
+      // (parent page sends postMessage with origin 'http://localhost:3000' but iframe origin may be 'null')
+      (function() {
+        var _origPostMessage = window.postMessage;
+        window.postMessage = function(message, targetOrigin) {
+          try {
+            return _origPostMessage.call(window, message, targetOrigin || '*');
+          } catch (e) {
+            return _origPostMessage.call(window, message, '*');
+          }
+        };
+        // Also listen for incoming postMessages from any origin
+        window.addEventListener('message', function(event) {
+          // Accept messages from any origin in local dev
+        }, false);
+      })();
+
+      window.BASE_URL = window.location.origin;
+      window.COUNTRY_CODE = 'gh';
+      window.BRAND = 'sportybet';
+      window.MODE = 'production';
+      window.PLATFORM = 'WAP';
+      window.USER_ID = 'local_user_123';
+
+      var _origFetch = window.fetch;
+      if (_origFetch) {
+        window.fetch = function(input, init) {
+          if (typeof input === 'string') {
+            input = input
+              .replace(/^https?:\/\/s\.sporty\.net\//i, '/')
+              .replace(/^\/\/s\.sporty\.net\//i, '/')
+              .replace(/^https?:\/\/s\.football\.com\//i, '/')
+              .replace(/^\/\/s\.football\.com\//i, '/')
+              .replace(/^https?:\/\/faro-sportybet\.sportydog\.net\//i, '/')
+              .replace(/^https?:\/\/.*\.sportydog\.net\//i, '/');
+          } else if (input && input.url) {
+            try {
+              var newUrl = input.url
+                .replace(/^https?:\/\/s\.sporty\.net\//i, '/')
+                .replace(/^\/\/s\.sporty\.net\//i, '/')
+                .replace(/^https?:\/\/s\.football\.com\//i, '/')
+                .replace(/^\/\/s\.football\.com\//i, '/')
+                .replace(/^https?:\/\/faro-sportybet\.sportydog\.net\//i, '/')
+                .replace(/^https?:\/\/.*\.sportydog\.net\//i, '/');
+              if (newUrl !== input.url) {
+                input = new Request(newUrl, input);
+              }
+            } catch (e) {}
+          }
+          if (init && (init.method === 'GET' || init.method === 'HEAD' || !init.method)) {
+            if ('body' in init) {
+              delete init.body;
+            }
+          }
+          return _origFetch.apply(this, arguments);
+        };
+      }
+
+      var _origOpen = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function(method, url) {
+        if (typeof url === 'string') {
+          url = url
+            .replace(/^https?:\/\/s\.sporty\.net\//i, '/')
+            .replace(/^\/\/s\.sporty\.net\//i, '/')
+            .replace(/^https?:\/\/s\.football\.com\//i, '/')
+            .replace(/^\/\/s\.football\.com\//i, '/')
+            .replace(/^https?:\/\/faro-sportybet\.sportydog\.net\//i, '/')
+            .replace(/^https?:\/\/.*\.sportydog\.net\//i, '/');
+        }
+        var args = Array.prototype.slice.call(arguments);
+        args[1] = url;
+        return _origOpen.apply(this, args);
+      };
+
+      try {
+        if (!('Notification' in window)) {
+          window.Notification = function() {};
+        }
+        window.Notification.permission = 'granted';
+        window.Notification.requestPermission = function(cb) {
+          if (typeof cb === 'function') cb('granted');
+          return Promise.resolve('granted');
+        };
+      } catch (e) {}
+
+      window.addEventListener('unhandledrejection', function(event) {
+        var reason = event && event.reason;
+        var name = (reason && reason.name) || '';
+        var msg = (reason && (reason.message || reason)) || '';
+        if (
+          name === 'NavigationDuplicated' ||
+          (typeof msg === 'string' && (
+            msg.indexOf("NavigationDuplicated") !== -1 ||
+            msg.indexOf("Avoided redundant navigation") !== -1 ||
+            msg.indexOf("doesn't support notification") !== -1 ||
+            msg.indexOf("Could not establish connection") !== -1
+          ))
+        ) {
+          event.preventDefault();
+        }
+      });
+    </script>
+  
+    <!-- Preconnect -->
+    
+    
+    <!-- Fonts -->
+    <link
+      rel="stylesheet"
+      href="/global/main/fonts/roboto.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="/global/main/fonts/roboto.css"
+      />
+    </noscript>
+
+    <script>
+      (() => {
+        const baseUrl = ``.trim();
+        const basePath = `/sportygames/`.trim();
+
+        if (/^https?:\/\//i.test(baseUrl)) {
+          const preconnect = document.createElement('link');
+          preconnect.rel = 'preconnect';
+          preconnect.href = baseUrl;
+          document.head.appendChild(preconnect);
+
+          const dnsPrefetch = document.createElement('link');
+          dnsPrefetch.rel = 'dns-prefetch';
+          dnsPrefetch.href = baseUrl;
+          document.head.appendChild(dnsPrefetch);
+        }
+
+        if (/^https?:\/\//i.test(basePath)) {
+          const preconnect = document.createElement('link');
+          preconnect.rel = 'preconnect';
+          preconnect.href = basePath;
+          document.head.appendChild(preconnect);
+
+          const dnsPrefetch = document.createElement('link');
+          dnsPrefetch.rel = 'dns-prefetch';
+          dnsPrefetch.href = basePath;
+          document.head.appendChild(dnsPrefetch);
+        }
+      })();
+    </script>
+
+    <script>
+      (() => {
+        const primaryUrl = `/sportygames/`.trim();
+        const fallbackDomain = `cdn.sporty.net`.trim();
+
+        if (!fallbackDomain) return;
+
+        document.addEventListener('error', (event) => {
+          const el = event.target;
+          if (!(el instanceof HTMLLinkElement) || el.dataset.fallbackApplied) return;
+          if (el.rel !== 'stylesheet' && el.rel !== 'modulepreload') return;
+
+          try {
+            const fallbackUrl = el.href.replace(new URL(primaryUrl).hostname, fallbackDomain);
+            if (fallbackUrl === el.href) return;
+
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            el.dataset.fallbackApplied = 'true';
+            el.href = fallbackUrl;
+          } catch (_) {}
+        }, true);
+      })();
+    </script>
+
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .app-init-loader-wrap {
+        display: none;
+        height: 100%;
+        left: 0;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+      }
+
+      .app-spinner-loader-icon {
+        -webkit-animation: 0.75s linear infinite app-spinner-loader;
+        animation: 0.75s linear infinite app-spinner-loader;
+        background-color: #3e4044;
+        border-radius: 50%;
+        display: inline-block;
+        height: 42px;
+        opacity: 0;
+        vertical-align: -0.125em;
+        width: 42px;
+      }
+
+      .app-spinner-loader {
+        left: 50%;
+        position: absolute;
+        top: 50%;
+        transform: translate3d(-50%, -50%, 0);
+      }
+
+      .app-spinner-loader-wrap {
+        background-color: #000;
+        height: 100%;
+        width: 100%;
+      }
+
+      @keyframes app-spinner-loader {
+        0% {
+          -webkit-transform: scale(0);
+          transform: scale(0);
+        }
+
+        50% {
+          opacity: 1;
+          -webkit-transform: none;
+          transform: none;
+        }
+      }
+    </style>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"
+    />
+    <title>SportyGames</title>
+    <script>
+      (() => {
+        const runtimeTitle = `SportyGames`.trim();
+        if (runtimeTitle) {
+          document.title = runtimeTitle;
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/sportygames/assets/index-CbEDgh8w.js"></script>
+    <link rel="modulepreload" crossorigin href="/sportygames/assets/chunk-vite-preload-helper-DPyo7WEC.js">
+    <script type="module">import'data:text/javascript,if(!import.meta.resolve)throw Error("import.meta.resolve not supported")';import.meta.url;import("_").catch(()=>1);(async function*(){})().next();window.__vite_is_modern_browser=true</script>
+    <script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script>
+  </head>
+  <body>
+    <noscript>
+      <strong
+        >We're sorry but SportyGames doesn't work properly without
+        JavaScript enabled. Please enable it to continue.</strong
+      >
+    </noscript>
+
+    <div class="app-init-loader-wrap" id="app-init-loader-wrap">
+      <div class="app-spinner-loader-wrap">
+        <div class="app-spinner-loader">
+          <div class="app-spinner-loader-icon"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const path = window.location.pathname;
+        const platform = `WAP`.trim();
+
+        if (path.includes('/lobby') && !path.includes('/lobby-mini')) {
+          const loader = document.getElementById('app-init-loader-wrap');
+          if (loader) loader.style.display = 'block';
+        }
+
+        if (platform === 'WAP') {
+          let theme = 'dark';
+
+          
+          theme = localStorage.getItem('theme') || 'dark';
+          if (theme.toLowerCase() === 'systemauto') {
+            const darkThemeMq = window.matchMedia(
+              '(prefers-color-scheme: dark)',
+            );
+            theme = darkThemeMq.matches ? 'dark' : 'light';
+          }
+          
+
+          
+
+          theme = theme.toLowerCase();
+
+          if (!path.includes('/lobby-mini')) {
+            const loaderWrap = document.querySelector('.app-spinner-loader-wrap');
+            const loaderIcon = document.querySelector('.app-spinner-loader-icon');
+
+            if (theme === 'light') {
+              if (loaderWrap) loaderWrap.style.backgroundColor = '#f4f4f4';
+              if (loaderIcon) loaderIcon.style.backgroundColor = '#e0e1e2';
+            } else if (theme === 'dark') {
+              if (loaderWrap) {
+                loaderWrap.style.backgroundColor =
+                  '#000';
+              }
+            }
+          }
+        }
+      })();
+    </script>
+
+    
+    <script>
+    const primaryUrl = `/sportygames/`.trim();
+    const fallbackDomain = `cdn.sporty.net`.trim();
+
+    if (fallbackDomain) {
+      /*! ASSET RETRY ORIGINAL BUNDLE --------- */
+      !function (t, e) { try { window.assetsRetry = e() } catch (e) { } }(0, (() => { function t(t) { return t } function e() { } function n(t) { for (var e = Object.getPrototypeOf ? Object.getPrototypeOf : function (t) { return t.__proto__ }, n = Object.keys(t); e(t);)n = n.concat(Object.keys(e(t))), t = e(t); return n.filter((t => "constructor" !== t)) } function r(t, e) { try { return "function" == typeof t[e] } catch (t) { return !1 } } function o(t) { return Array.isArray(t) ? t.reduce(((t, e, n, r) => (t[e] = r[(n + 1) % r.length], t)), {}) : t } function c(t, e) { return Object.keys(e).filter((e => t.indexOf(e) > -1)).sort(((t, e) => e.length - t.length))[0] } var s, i, a, l = "retryTimes", u = "succeeded", f = "failed", d = "maxRetryCount", y = "onRetry", h = "onSuccess", p = "onFail", g = "domain", b = "_assetsRetryProxy", m = "_assetsRetryOnerror", E = "script", O = "link", j = "data-assets-retry-hooked", w = "data-assets-retry-ignore", v = "data-retry-id", A = window, k = window.document, R = A.HTMLElement, S = A.HTMLScriptElement, L = A.HTMLStyleElement, T = A.HTMLLinkElement, _ = A.HTMLImageElement, M = Object.prototype.hasOwnProperty, x = function (t, e, n) { const r = t.indexOf(e); return -1 === r ? t : t.substring(0, r) + n + t.substring(r + e.length) }, N = function (t) { return [].slice.call(t) }, H = function (t, n, r, o) { void 0 === r && (r = e), void 0 === o && (o = !1); let c, s, i, a, l, u = o || t.defer || t.async; "loading" !== k.readyState || /Edge|MSIE|rv:/i.test(navigator.userAgent) || u ? (c = k.createElement(E), Object.keys(S.prototype).forEach((e => { if ("src" !== e && t[e] && "object" != typeof t[e]) try { c[e] = t[e] } catch (e) { } })), c.src = n, c.onload = t.onload, c.onerror = t.onerror, c.setAttribute(v, B()), (s = t.getAttribute("nonce")) && c.setAttribute("nonce", s), k.getElementsByTagName("head")[0].appendChild(c)) : (i = B(), a = t.outerHTML.replace(/data-retry-id="[^"]+"/, "").replace(/src=(?:"[^"]+"|.+)([ >])/, v + "=" + i + ' src="' + n + '"$1'), k.write(a), (l = k.querySelector("script[" + v + '="' + i + '"]')) && (l.onload = r)) }, P = function (t) { try { return t.rules } catch (e) { try { return t.cssRules } catch (t) { return null } } }, I = function (t, e, n) { const r = k.createElement(O); Object.keys(T.prototype).forEach((e => { if ("href" !== e && t[e] && "object" != typeof t[e]) try { r[e] = t[e] } catch (e) { } })), r.href = e, r.onload = n || t.onload, r.onerror = t.onerror, r.setAttribute(v, B()), k.getElementsByTagName("head")[0].appendChild(r) }, C = function (t) { return t ? t instanceof R ? [t.nodeName, t.src, t.href, t.getAttribute(v)].join(";") : "not_supported" : "null" }, B = function () { return Math.random().toString(36).slice(2) }, q = function (t) { return t instanceof S || t instanceof _ ? t.src : t instanceof T ? t.href : "" }, z = {}, F = function (t, e) { let n, r = Z(t, e), o = r[0], c = r[1]; return o ? (z[o] = z[o] || ((n = {})[l] = 0, n[f] = [], n[u] = [], n), [c, z[o]]) : [] }, Z = function (t, e) { let n, r, o = c(t, e); return o ? [(r = o, (n = t).substr(n.indexOf(r) + r.length, n.length)), o] : ["", ""] }; try { i = function () { for (var t = 0, e = 0, n = arguments.length; e < n; e++)t += arguments[e].length; var r = Array(t), o = 0; for (e = 0; e < n; e++)for (let t = arguments[e], n = 0, c = t.length; n < c; n++, o++)r[o] = t[n]; return r }(n(S.prototype), n(T.prototype)), a = {}, i.forEach((t => { a[t] = !0 })), s = Object.keys(a) } catch (n) { } function $(t, n) { const c = n[d], i = o(n[g]), a = n[y]; return s.reduce(((n, o) => { const s = r(S.prototype, o); return n[o] = s ? { value() { return t[b][o].apply(t[b], arguments) } } : { set(n) { const r = t[b]; return "onerror" === o ? (t[m] = n, void (r.onerror = function (n) { if ("string" != typeof n) { n.stopPropagation && n.stopPropagation(); let o = function () { return o = t[m], s = r, u = n, "function" != typeof o ? null : o.call(s, u) }, s = q(r), u = F(s, i), f = u[0], d = u[1], y = r.hasAttribute(w); if (!f || !d || y) return o(); const h = x(s, f, i[f]), p = a(h, s, d); if (null === p) return o(); if ("string" != typeof p) throw new Error("a string should be returned in `onRetry` function"); d[l] <= c ? r instanceof S ? H(r, p, e, !0) : r instanceof T && I(r, p) : o() } })) : "onload" === o ? (t._assetsRetryOnload = n, void (t[b].onload = function (e) { n && !n._called && (n._called = !0, n.call(t[b], e)) })) : void (r[o] = n) }, get: () => t[b][o] }, n }), {}) } const D = function (t) { const n = k.createElement; k.createElement = function (r, o) { return r === E || r === O ? function (t, n) { let r; t.setAttribute(j, "true"); const o = ((r = {})[b] = t, r[m] = e, r), c = $(o, n); return Object.defineProperties(o, c), o.onload = e, o.onerror = e, o }(n.call(k, r), t) : n.call(k, r, o) } }, G = function (t) { Object.keys(t).filter((e => r(t, e))).forEach((e => { const n = t[e]; t[e] = function () { const t = [].slice.call(arguments).map((t => t && M.call(t, b) ? t[b] : t)); return n.apply(this, t) } })) }, J = {}; function K(t) { function e(e) { if (e) { const r = e.target || e.srcElement, s = q(r); if (s) { const e = F(s, c), i = e[0], a = e[1], u = r instanceof HTMLElement && r.hasAttribute(w); if (a && i && !u) { a[l]++, a[f].push(s); let e, u = a[l] > t[d]; if (u && (e = Z(s, c)[0], o(e)), c[i] && !u) { const t = c[i], e = x(s, i, t), o = n(e, s, a); if (null !== o) { if ("string" != typeof o) throw new Error("a string should be returned in `onRetry` function"); const t = C(r); J[t] || (J[t] = !0, r instanceof S && !r.getAttribute(j) && r.src ? H(r, o) : r instanceof T && !r.getAttribute(j) && r.href ? I(r, o) : r instanceof _ && r.src && (r.setAttribute(v, B()), r.src = o)) } } } } } } var n = t[y], r = t[h], o = t[p], c = t[g]; k.addEventListener("error", e, !0), k.addEventListener("load", (t => { let n, o, s, i, a, l, f, d; t && (n = t.target || t.srcElement, (o = q(n)) && ((s = F(o, c))[0], i = s[1], a = Z(o, c)[0], l = function () { i && i[u].push(o), r(a) }, n instanceof T ? k.styleSheets && (f = N(k.styleSheets).filter((t => t.href === n.href))[0], null !== (d = P(f)) && (0 !== d.length ? l() : e(t))) : l())) }), !0) } return function (n) { let r, s, i, a; void 0 === n && (n = {}); try { if ("object" != typeof n[g]) throw new Error("opts.domain cannot be non-object."); const l = [d, y, h, p, g], u = Object.keys(n).filter((t => -1 === l.indexOf(t))); if (u.length > 0) throw new Error("option name: " + u.join(", ") + " is not valid."); const f = ((r = {})[d] = n[d] || 3, r[y] = n[y] || t, r[h] = n[h] || e, r[p] = n[p] || e, r[g] = o(n[g]), r); return D(f), "undefined" != typeof Node && G(Node.prototype), "undefined" != typeof Element && G(Element.prototype), K(f), z } catch (n) { A.console && console.error("[assetsRetry] error captured", n) } } }));
+
+      /*! END ORIGINAL ASSET RETRY ----------- */
+
+      const primaryDomain = new URL(primaryUrl, window.location.origin).hostname;
+      const domainRules = {};
+      domainRules[primaryDomain] = fallbackDomain;
+
+      window.assetsRetry &&
+        window.assetsRetry({
+          domain: domainRules,
+          maxRetryCount: 1,
+          onRetry(currentUrl, originalUrl, stats) {
+            return currentUrl;
+          },
+        });
+    }
+    </script>
+
+    <div id="app" class="app container p-0"></div>
+    <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
+    <script nomodule crossorigin id="vite-legacy-polyfill" src="/sportygames/assets/polyfills-legacy-BAULWI42.js"></script>
+    <script src="/common/ghs-money.js"></script>
+    <script>
+    (function() {
+      function formatGhsAmount(amount) {
+        return window.GhsMoney ? window.GhsMoney.format(amount) : Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      window.formatGhsAmount = formatGhsAmount;
+
+      function formatGhsAmountParts(amount) {
+        if (window.GhsMoney) return window.GhsMoney.formatParts(amount);
+        var num = Number(amount || 0);
+        var str = num.toFixed(2);
+        var parts = str.split('.');
+        var intFormatted = Number(parts[0]).toLocaleString('en-US');
+        var pesewaStr = '.' + (parts[1] || '00');
+        return { intPart: intFormatted, pesewaPart: pesewaStr, full: intFormatted + pesewaStr };
+      }
+      window.formatGhsAmountParts = formatGhsAmountParts;
+
+      function refreshWalletUI(forcedGhs) {
+        try {
+          fetch('/pocket/v1/wallet/assetsInfo?_t=' + Date.now())
+            .then(function(r) { return r.json(); })
+            .then(function(json) {
+              if (!json || json.bizCode !== 10000 || !json.data) return;
+              var ghs = window.GhsMoney
+                ? window.GhsMoney.fromWalletPayload(json.data, forcedGhs)
+                : Number((forcedGhs !== undefined) ? forcedGhs : (json.data.balanceGhs != null ? json.data.balanceGhs : 0));
+              if (ghs !== undefined && ghs !== null && !isNaN(ghs)) {
+                window.__userWalletBalance = ghs;
+                try {
+                  localStorage.setItem('sporty_wallet_balance', String(ghs));
+                  window.dispatchEvent(new CustomEvent('sporty-balance-updated', { detail: { balance: ghs } }));
+                } catch (_) {}
+
+                var parts = formatGhsAmountParts(ghs);
+                var formatted = parts.full;
+                var intPart = parts.intPart;
+                var pesewaPart = parts.pesewaPart;
+                var pesewaDigits = pesewaPart.substring(1);
+
+                function isPayoutOrWinDisplay(el) {
+                  return !!(el.closest && el.closest(
+                    '#winngin-pop, [data-op="virtual_common_winning_pop"], .main__return, .winning-amount, .winning-section-wrapper, .total-win, .total-return, .total-return-amount, .claim-wrapper'
+                  ));
+                }
+
+                var selectors = [
+                  '.m-balance',
+                  '.m-balance-wrapper',
+                  '.m-nav__balance',
+                  '.m-header-balance',
+                  '.m-wallet-balance',
+                  '.m-cur-balance',
+                  '.balance',
+                  '.balance-value',
+                  '[class*="balance-val"]',
+                  '[class*="balance_val"]',
+                  '[class*="balanceValue"]',
+                  '[data-op*="balance"]',
+                  '.nav-balance',
+                  '.user-balance',
+                  '.m-user-balance'
+                ];
+
+                selectors.forEach(function(sel) {
+                  document.querySelectorAll(sel).forEach(function(el) {
+                    if (!el || isPayoutOrWinDisplay(el)) return;
+
+                    var intEl = el.querySelector('[class*="integer"], [class*="int-part"], [class*="whole"]');
+                    var decEl = el.querySelector('[class*="decimal"], [class*="dec-part"], [class*="fraction"], small');
+                    if (intEl && decEl) {
+                      intEl.textContent = intPart;
+                      decEl.textContent = decEl.textContent.trim().startsWith('.') ? pesewaPart : pesewaDigits;
+                      return;
+                    }
+
+                    var valEl = el.querySelector('.value, .balance-value, .money, .m-balance-value');
+                    if (valEl && !valEl.children.length && !isPayoutOrWinDisplay(valEl)) {
+                      valEl.textContent = formatted;
+                      return;
+                    }
+
+                    if (!el.children.length) {
+                      el.textContent = formatted;
+                      return;
+                    }
+
+                    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                    var node;
+                    var textNodes = [];
+                    while ((node = walker.nextNode())) {
+                      if (node.nodeValue && node.nodeValue.trim()) {
+                        textNodes.push(node);
+                      }
+                    }
+                    
+                    if (textNodes.length === 1) {
+                      var text = textNodes[0].nodeValue;
+                      if (text.match(/[0-9,]+\.[0-9]{2}/)) {
+                        textNodes[0].nodeValue = text.replace(/[0-9,]+\.[0-9]{2}/, formatted);
+                      } else if (text.match(/[0-9,]+/)) {
+                        textNodes[0].nodeValue = text.replace(/[0-9,]+/, formatted);
+                      }
+                    } else {
+                      var fullNumNode = textNodes.find(function(n) { return /[0-9,]+\.[0-9]{2}/.test(n.nodeValue); });
+                      if (fullNumNode) {
+                        fullNumNode.nodeValue = fullNumNode.nodeValue.replace(/[0-9,]+\.[0-9]{2}/, formatted);
+                      }
+                    }
+                  });
+                });
+              }
+            })
+            .catch(function() {});
+        } catch (_) {}
+      }
+      window.__refreshWalletUI = refreshWalletUI;
+      refreshWalletUI();
+      setTimeout(refreshWalletUI, 100);
+      setTimeout(refreshWalletUI, 500);
+      setInterval(refreshWalletUI, 1000);
+      window.addEventListener('sporty-balance-updated', function(e) {
+        if (e.detail && e.detail.balance !== undefined) {
+          refreshWalletUI(e.detail.balance);
+        }
+      });
+
+      try {
+        var walletObserver = new MutationObserver(function() {
+          refreshWalletUI();
+        });
+        if (document.body) {
+          walletObserver.observe(document.body, { childList: true, subtree: true });
+        } else {
+          window.addEventListener('DOMContentLoaded', function() {
+            walletObserver.observe(document.body, { childList: true, subtree: true });
+          });
+        }
+      } catch (_) {}
+    })();
+    </script>
+<!-- Supabase-Backed Auth System & Login Modal Overlay -->
+<style>
+#sb-auth-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+#sb-auth-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.sb-auth-card {
+  background: #181b20;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  color: #fff;
+  position: relative;
+  transform: translateY(20px);
+  transition: transform 0.25s ease;
+}
+#sb-auth-modal-overlay.active .sb-auth-card {
+  transform: translateY(0);
+}
+.sb-auth-close {
+  position: absolute;
+  top: 14px; right: 16px;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+.sb-auth-close:hover { color: #fff; }
+.sb-auth-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.sb-auth-logo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #00e676;
+  margin-bottom: 6px;
+}
+.sb-auth-subtitle {
+  font-size: 13px;
+  color: #999;
+}
+.sb-auth-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+.sb-auth-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.sb-auth-tab.active {
+  color: #00e676;
+  border-bottom-color: #00e676;
+}
+.sb-auth-form-group {
+  margin-bottom: 16px;
+}
+.sb-auth-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #bbb;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.sb-auth-input-wrapper {
+  display: flex;
+  background: #22262e;
+  border: 1px solid #333842;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.sb-auth-input-wrapper:focus-within {
+  border-color: #00e676;
+}
+.sb-auth-prefix {
+  padding: 12px 14px;
+  background: #2a2f39;
+  color: #00e676;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+.sb-auth-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 12px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+.sb-auth-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #00e676, #00b0ff);
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  color: #000;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.sb-auth-btn:hover { opacity: 0.95; }
+.sb-auth-btn:active { transform: scale(0.98); }
+.sb-auth-msg {
+  font-size: 12px;
+  margin-top: 12px;
+  text-align: center;
+  min-height: 18px;
+}
+.sb-auth-msg.error { color: #ff5252; }
+.sb-auth-msg.success { color: #00e676; }
+</style>
+
+<div id="sb-auth-modal-overlay">
+  <div class="sb-auth-card">
+    <button class="sb-auth-close" onclick="window.hideLoginModal()">✕</button>
+    <div class="sb-auth-header">
+      <div class="sb-auth-logo">SPORTYBET</div>
+      <div class="sb-auth-subtitle" id="sb-auth-subtitle-txt">Sign in to your account</div>
+    </div>
+    <div class="sb-auth-tabs">
+      <div class="sb-auth-tab active" id="sb-tab-login" onclick="window.switchAuthTab('login')">LOGIN</div>
+      <div class="sb-auth-tab" id="sb-tab-register" onclick="window.switchAuthTab('register')">REGISTER</div>
+    </div>
+    <form id="sb-auth-form" onsubmit="window.handleAuthSubmit(event)">
+      <div class="sb-auth-form-group">
+        <label class="sb-auth-label">Mobile Number</label>
+        <div class="sb-auth-input-wrapper">
+          <div class="sb-auth-prefix">+233</div>
+          <input type="tel" id="sb-auth-phone" class="sb-auth-input" placeholder="0591234567" required autocomplete="tel" />
+        </div>
+      </div>
+      <div class="sb-auth-form-group">
+        <label class="sb-auth-label">Password / PIN</label>
+        <div class="sb-auth-input-wrapper">
+          <input type="password" id="sb-auth-password" class="sb-auth-input" placeholder="Enter password" required autocomplete="current-password" />
+        </div>
+      </div>
+      <button type="submit" class="sb-auth-btn" id="sb-auth-submit-btn">LOG IN</button>
+      <div class="sb-auth-msg" id="sb-auth-msg"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  var _currentTab = 'login';
+  var _onAuthSuccessCb = null;
+
+  window.showLoginModal = function(cb, tab) {
+    if (cb && typeof cb === 'function') _onAuthSuccessCb = cb;
+    if (tab) window.switchAuthTab(tab);
+    var overlay = document.getElementById('sb-auth-modal-overlay');
+    if (overlay) overlay.classList.add('active');
+  };
+
+  window.hideLoginModal = function() {
+    var overlay = document.getElementById('sb-auth-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
+    var msg = document.getElementById('sb-auth-msg');
+    if (msg) msg.textContent = '';
+  };
+
+  window.switchAuthTab = function(tab) {
+    _currentTab = tab;
+    var tLogin = document.getElementById('sb-tab-login');
+    var tReg = document.getElementById('sb-tab-register');
+    var sub = document.getElementById('sb-auth-subtitle-txt');
+    var btn = document.getElementById('sb-auth-submit-btn');
+
+    if (tab === 'login') {
+      if (tLogin) tLogin.classList.add('active');
+      if (tReg) tReg.classList.remove('active');
+      if (sub) sub.textContent = 'Sign in to access your wallet & place bets';
+      if (btn) btn.textContent = 'LOG IN';
+    } else {
+      if (tReg) tReg.classList.add('active');
+      if (tLogin) tLogin.classList.remove('active');
+      if (sub) sub.textContent = 'Create a new account with starting balance';
+      if (btn) btn.textContent = 'CREATE ACCOUNT';
+    }
+  };
+
+  window.handleAuthSubmit = function(e) {
+    e.preventDefault();
+    var phone = document.getElementById('sb-auth-phone').value.trim();
+    var password = document.getElementById('sb-auth-password').value.trim();
+    var msg = document.getElementById('sb-auth-msg');
+    var btn = document.getElementById('sb-auth-submit-btn');
+
+    if (!phone || !password) {
+      if (msg) { msg.className = 'sb-auth-msg error'; msg.textContent = 'Please enter mobile number and password'; }
+      return;
+    }
+
+    if (btn) btn.disabled = true;
+    if (msg) { msg.className = 'sb-auth-msg'; msg.textContent = 'Authenticating with Supabase...'; }
+
+    var endpoint = (_currentTab === 'register') ? '/api/gh/patron/register' : '/api/gh/patron/login';
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: phone, password: password })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (btn) btn.disabled = false;
+      if (res && res.bizCode === 10000 && res.data) {
+        if (msg) { msg.className = 'sb-auth-msg success'; msg.textContent = 'Logged in successfully!'; }
+        setTimeout(function() {
+          window.hideLoginModal();
+          window.checkAuthStatus();
+          if (_onAuthSuccessCb) { _onAuthSuccessCb(); _onAuthSuccessCb = null; }
+        }, 500);
+      } else {
+        if (msg) { msg.className = 'sb-auth-msg error'; msg.textContent = res.message || 'Authentication failed'; }
+      }
+    })
+    .catch(function(err) {
+      if (btn) btn.disabled = false;
+      if (msg) { msg.className = 'sb-auth-msg error'; msg.textContent = 'Connection error. Please try again.'; }
+    });
+  };
+
+  window.performLogout = function() {
+    fetch('/api/gh/patron/logout', { method: 'POST' })
+      .then(function() {
+        window.checkAuthStatus();
+      })
+      .catch(function() {
+        window.checkAuthStatus();
+      });
+  };
+
+  window.checkAuthStatus = function() {
+    fetch('/api/gh/patron/account/info?_t=' + Date.now())
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        var isLoggedIn = (res && res.bizCode === 10000 && res.data);
+        if (isLoggedIn && typeof window.refreshWalletUI === 'function') {
+          window.refreshWalletUI();
+        }
+      })
+      .catch(function() {});
+  };
+
+  document.addEventListener('click', function(e) {
+    var target = e.target.closest('[href*="deposit"], [href*="withdraw"], .m-btn--deposit, .m-btn--withdraw, [data-op="deposit"], [data-op="withdraw"]');
+    if (target) {
+      fetch('/api/gh/patron/account/info')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          if (!res || res.bizCode !== 10000) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.showLoginModal(function() {
+              if (target.href) window.location.href = target.href;
+            });
+          }
+        }).catch(function() {});
+    }
+  }, true);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.checkAuthStatus);
+  } else {
+    window.checkAuthStatus();
+  }
+})();
+</script>
+  </body>
+</html>

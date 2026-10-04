@@ -1,0 +1,2490 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<script>
+(function() {
+  // Enforce Max Stake (75,000.00 GHS) and Max Payout (1,200,000.00 GHS) globally
+  window.sportsCfg = Object.assign(window.sportsCfg || {}, {
+    min: '0.1',
+    max: '75000.00',
+    default: '1',
+    potWinMax: '1200000.00'
+  });
+  window.bonusCfg = Object.assign(window.bonusCfg || {}, {
+    max: '1200000.00'
+  });
+  window.cashoutCfg = Object.assign(window.cashoutCfg || {}, {
+    min: '0.01',
+    max: '1200000.00'
+  });
+  window.MAX_WIN_CAP_GHS = 1200000.00;
+  window.MAX_STAKE_CAP_GHS = 75000.00;
+
+  // Immediately purge any poisoned service worker cache
+  if (typeof window !== 'undefined' && 'caches' in window) {
+    caches.delete('localizations').catch(function() {});
+  }
+
+  function generateDynamicRoundId() {
+    return '260925' + Date.now().toString().slice(-6) + 'uRnd' + Math.random().toString(36).slice(2, 8);
+  }
+  window.__activeIvRoundId = generateDynamicRoundId();
+
+  // If page was opened with obsolete hardcoded round ID, immediately update URL
+  if (window.location.pathname.indexOf('260925100039uRndmfswg9655') !== -1) {
+    try {
+      var fixedPath = window.location.pathname.replace('260925100039uRndmfswg9655', window.__activeIvRoundId);
+      window.history.replaceState(null, '', fixedPath + window.location.search);
+    } catch (_) {}
+  }
+
+  // Intercept history navigation to replace obsolete round ID
+  var _origPushState = history.pushState;
+  history.pushState = function(state, title, url) {
+    if (typeof url === 'string' && url.indexOf('260925100039uRndmfswg9655') !== -1) {
+      url = url.replace(/260925100039uRndmfswg9655/g, window.__activeIvRoundId);
+    }
+    return _origPushState.call(this, state, title, url);
+  };
+  var _origReplaceState = history.replaceState;
+  history.replaceState = function(state, title, url) {
+    if (typeof url === 'string' && url.indexOf('260925100039uRndmfswg9655') !== -1) {
+      url = url.replace(/260925100039uRndmfswg9655/g, window.__activeIvRoundId);
+    }
+    return _origReplaceState.call(this, state, title, url);
+  };
+
+  var _cleanUrl = function(val) {
+    if (typeof val === 'string') {
+      var cleaned = val
+        .replace(/https?:\/\/s\.sporty\.net\//gi, '/')
+        .replace(/\/\/s\.sporty\.net\//gi, '/')
+        .replace(/https?:\/\/cdn\.sporty\.net\//gi, '/')
+        .replace(/\/\/cdn\.sporty\.net\//gi, '/')
+        .replace(/https?:\/\/s\.football\.com\//gi, '/')
+        .replace(/\/\/s\.football\.com\//gi, '/');
+      if (cleaned.indexOf('260925100039uRndmfswg9655') !== -1 && window.__activeIvRoundId) {
+        cleaned = cleaned.replace(/260925100039uRndmfswg9655/g, window.__activeIvRoundId);
+      }
+      return cleaned;
+    }
+    return val;
+  };
+
+  // Universal Underscore Cleaner for all UI texts
+  var KNOWN_TRANSLATIONS = {
+    'open_bets': 'Open Bets',
+    'next_round': 'Next Round',
+    'bet_history': 'Bet History',
+    'how_to_play': 'How to Play',
+    'all_markets': 'All Markets',
+    'match_tracker': 'Match Tracker',
+    'single_view': 'Single View',
+    'multi_view': 'Multi View',
+    'half_time': 'Half Time',
+    'full_time': 'Full Time',
+    'quick_bet': 'Quick Bet',
+    'place_bet': 'Place Bet',
+    'single_bet': 'Single Bet',
+    'multiple_bet': 'Multiple Bet',
+    'view_details': 'View Details',
+    'view_all': 'View All',
+    'view_more': 'View More',
+    'early_payout': 'Early Payout',
+    'round_id': 'Round ID',
+    'ticket_id': 'Ticket ID',
+    'order_id': 'Order ID',
+    'round_no': 'Round No.',
+    'stake_used': 'Stake Used',
+    'total_stake': 'Total Stake',
+    'total_odds': 'Total Odds',
+    'total_return': 'Total Return',
+    'potential_win': 'Potential Win',
+    'potential_winnings': 'Potential Winnings',
+    'instant_football': 'Instant Football',
+    'instant_virtuals': 'Instant Virtuals',
+    'instant_basketball': 'Instant Basketball',
+    'scheduled_football': 'Scheduled Football',
+    'scheduled_virtuals': 'Scheduled Virtuals',
+    'sporty_legends': 'Sporty Legends',
+    'v_football': 'vFootball',
+    'sporty_penalty': 'Sporty Penalty',
+    'sporty_african_cup': 'Instant African Cup',
+    'instant_world_cup': 'Instant World Cup',
+    'instant_racing_dog': 'Instant Dog Racing',
+    'sporty_sim': 'Sporty SIM',
+    'golden_virtuals': 'Golden Virtuals',
+    'live_betting': 'Live Betting',
+    'cash_out': 'Cash Out',
+    'my_bets': 'My Bets',
+    'double_chance': 'Double Chance',
+    'draw_no_bet': 'Draw No Bet',
+    'over_under': 'Over/Under',
+    'both_teams_to_score': 'Both Teams To Score',
+    'asian_handicap': 'Asian Handicap',
+    'correct_score': 'Correct Score',
+    'first_half': '1st Half',
+    'second_half': '2nd Half',
+    '1st_half': '1st Half',
+    '2nd_half': '2nd Half',
+    '1_half_1_2': '1st Half 1X2',
+    '2_half_1_2': '2nd Half 1X2',
+    '1_half_o_u': '1st Half Over/Under',
+    '2_half_o_u': '2nd Half Over/Under',
+    'o_u': 'O/U',
+    'gg_ng': 'GG/NG',
+    'o_gg': 'O&GG',
+    'u_gg': 'U&GG',
+    'o_ng': 'O&NG',
+    'u_ng': 'U&NG',
+    '_1x2': '1X2',
+    '1x2_2up': '1X2 - 2UP',
+    '1up_and_2up': '1UP & 2UP',
+    '1up_or_2up': '1UP or 2UP',
+    'never_down': 'Never Down',
+    'one_cut': '1Cut',
+    'any_win': 'AnyWin',
+    'not_supported': 'Not Supported',
+    'match_status_h1': 'H1',
+    'match_status_h2': 'H2',
+    'user_identity': 'User Identity',
+    'account_info': 'Account Info',
+    'otp_verification': 'OTP Verification',
+    'please_confirm': 'Please Confirm',
+    'confirm_bet': 'Confirm Bet',
+    'live_score': 'Live Score',
+    'time_left': 'Time Left',
+    'game_rules': 'Game Rules',
+    'title_default': 'SportyBet - Online Sports Betting',
+    'title_default|sportybet': 'SportyBet - Online Sports Betting',
+    'title_live': 'Live Betting',
+    'title_virtuals': 'Instant Virtuals',
+    'title_sport': 'Sports Betting',
+    'title_football': 'Football Betting',
+    'title_games': 'SportyGames',
+    'title_jackpot': 'Jackpot',
+    'title_promotions': 'Promotions',
+    'title_help': 'Help & FAQ',
+    'title_me': 'My Account',
+    'title_orders': 'Open Bets',
+    'title_history': 'Bet History',
+    'title_deposit': 'Deposit',
+    'title_withdraw': 'Withdraw',
+    'default_title': 'SportyBet'
+  };
+
+  var SPECIAL_ACRONYMS = {
+    'id': 'ID',
+    'vs': 'vs',
+    'ht': 'HT',
+    'ft': 'FT',
+    'dnb': 'DNB',
+    'dc': 'DC',
+    'gg': 'GG',
+    'ng': 'NG',
+    '1x2': '1X2',
+    '1h': '1H',
+    '2h': '2H',
+    'h1': 'H1',
+    'h2': 'H2',
+    '2up': '2UP',
+    '1up': '1UP',
+    'otp': 'OTP',
+    'sms': 'SMS',
+    'faq': 'FAQ'
+  };
+
+  function cleanSnakeWord(token) {
+    if (!token || typeof token !== 'string') return token;
+    var trimmed = token.trim();
+    var lower = trimmed.toLowerCase();
+    if (KNOWN_TRANSLATIONS[lower]) return KNOWN_TRANSLATIONS[lower];
+
+    if (trimmed.indexOf('|sportybet') !== -1 || trimmed.indexOf('|SportyBet') !== -1) {
+      var parts = trimmed.split(/\|sportybet/i);
+      return (KNOWN_TRANSLATIONS[parts[0].toLowerCase()] || cleanSnakeWord(parts[0])) + ' | SportyBet';
+    }
+    if (trimmed.indexOf('|') !== -1) {
+      var parts = trimmed.split('|');
+      var cleaned = [];
+      for (var i = 0; i < parts.length; i++) {
+        cleaned.push(cleanSnakeWord(parts[i]));
+      }
+      return cleaned.join(' | ');
+    }
+
+    if (/\.(png|jpe?g|svg|webp|gif|js|css|json|woff2?|ttf|html)$/i.test(trimmed)) return token;
+    if (/^(https?:\/\/|\/|#|\.)/i.test(trimmed)) return token;
+
+    var parts = trimmed.split('_');
+    var cleanedParts = [];
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      if (!p) continue;
+      var pLow = p.toLowerCase();
+      if (SPECIAL_ACRONYMS[pLow]) {
+        cleanedParts.push(SPECIAL_ACRONYMS[pLow]);
+      } else {
+        cleanedParts.push(p.charAt(0).toUpperCase() + p.slice(1).toLowerCase());
+      }
+    }
+    return cleanedParts.join(' ');
+  }
+
+  function cleanString(str) {
+    if (typeof str !== 'string' || (str.indexOf('_') === -1 && str.indexOf('|') === -1)) return str;
+    if (str.indexOf('data:image') === 0 || str.indexOf('http://') === 0 || str.indexOf('https://') === 0) return str;
+    
+    var trimmed = str.trim().toLowerCase();
+    if (KNOWN_TRANSLATIONS[trimmed]) return KNOWN_TRANSLATIONS[trimmed];
+
+    var res = str;
+    if (res.indexOf('title_default') !== -1) {
+      res = res.replace(/title_default\|sportybet/gi, 'SportyBet - Online Sports Betting')
+               .replace(/title_default/gi, 'Online Sports Betting');
+    }
+
+    if (res.indexOf('|sportybet') !== -1 || res.indexOf('|SportyBet') !== -1) {
+      res = res.replace(/\b([a-zA-Z0-9_]+)\|sportybet\b/gi, function(match, p1) {
+        return (KNOWN_TRANSLATIONS[p1.toLowerCase()] || cleanSnakeWord(p1)) + ' | SportyBet';
+      });
+    }
+
+    for (var phrase in KNOWN_TRANSLATIONS) {
+      if (res.toLowerCase().indexOf(phrase) !== -1) {
+        var reg = new RegExp('\\b' + phrase + '\\b', 'gi');
+        res = res.replace(reg, KNOWN_TRANSLATIONS[phrase]);
+      }
+    }
+
+    res = res.replace(/\b([a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)+)\b/g, function(match) {
+      return cleanSnakeWord(match);
+    });
+
+    res = res.replace(/_1x2/gi, '1X2')
+             .replace(/_1st/gi, '1st')
+             .replace(/_2nd/gi, '2nd');
+
+    return res;
+  }
+  window.__cleanString = cleanString;
+
+  // Intercept document.title updates
+  try {
+    var _origTitleDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'title') ||
+                               Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'title');
+    if (_origTitleDescriptor && _origTitleDescriptor.set) {
+      Object.defineProperty(document, 'title', {
+        get: function() {
+          return _origTitleDescriptor.get.call(document);
+        },
+        set: function(val) {
+          if (typeof val === 'string') {
+            val = cleanString(val);
+            if (val.indexOf('title_default') !== -1) {
+              val = val.replace(/title_default\|sportybet/gi, 'SportyBet - Online Sports Betting')
+                       .replace(/title_default/gi, 'Online Sports Betting');
+            }
+            val = val.replace(/\|\s*sportybet/gi, ' | SportyBet');
+          }
+          return _origTitleDescriptor.set.call(document, val);
+        },
+        configurable: true
+      });
+    }
+  } catch (e) {}
+
+  var isCleaning = false;
+  function cleanNode(node) {
+    if (!node) return;
+    if (node.nodeType === 3) {
+      var p = node.parentElement;
+      if (p) {
+        var t = p.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'NOSCRIPT' || t === 'TEXTAREA' || t === 'CODE' || t === 'PRE') return;
+      }
+      var v = node.nodeValue;
+      if (v && (v.indexOf('_') !== -1 || v.indexOf('|') !== -1)) {
+        var c = cleanString(v);
+        if (c !== v) {
+          node.nodeValue = c;
+        }
+      }
+      return;
+    }
+    if (node.nodeType === 1) {
+      var t = node.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'NOSCRIPT' || t === 'TEXTAREA' || t === 'CODE' || t === 'PRE') return;
+      if (node.placeholder && node.placeholder.indexOf('_') !== -1) {
+        node.placeholder = cleanString(node.placeholder);
+      }
+      if (node.title && node.title.indexOf('_') !== -1) {
+        node.title = cleanString(node.title);
+      }
+      var ch = node.firstChild;
+      while (ch) {
+        var next = ch.nextSibling;
+        cleanNode(ch);
+        ch = next;
+      }
+    }
+  }
+
+  function runClean() {
+    if (isCleaning) return;
+    isCleaning = true;
+    try {
+      if (document.body) cleanNode(document.body);
+    } finally {
+      isCleaning = false;
+    }
+  }
+
+  var cleanScheduled = false;
+  var domObserver = new MutationObserver(function(mutations) {
+    if (isCleaning || cleanScheduled) return;
+    cleanScheduled = true;
+    setTimeout(function() {
+      cleanScheduled = false;
+      for (var i = 0; i < mutations.length; i++) {
+        var m = mutations[i];
+        if (m.type === 'childList') {
+          for (var j = 0; j < m.addedNodes.length; j++) {
+            cleanNode(m.addedNodes[j]);
+          }
+        } else if (m.type === 'characterData') {
+          cleanNode(m.target);
+        }
+      }
+    }, 80);
+  });
+
+  if (document.body) {
+    domObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+    runClean();
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.body) {
+        domObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+        runClean();
+      }
+    });
+  }
+
+  var sweepCount = 0;
+  var sweepTimer = setInterval(function() {
+    sweepCount++;
+    runClean();
+    if (sweepCount > 12) clearInterval(sweepTimer);
+  }, 500);
+
+  function cleanCmsData(data) {
+    if (!data) return;
+    if (data.keys) {
+      for (var k in data.keys) {
+        if (data.keys[k] && typeof data.keys[k].value === 'string') {
+          data.keys[k].value = cleanString(data.keys[k].value);
+        }
+      }
+      for (var tk in KNOWN_TRANSLATIONS) {
+        if (!data.keys[tk] || !data.keys[tk].value || data.keys[tk].value.indexOf('_') !== -1) {
+          data.keys[tk] = { key: tk, value: KNOWN_TRANSLATIONS[tk], type: 'TEXT' };
+        }
+      }
+    } else if (Array.isArray(data)) {
+      data.forEach(function(item) {
+        cleanCmsData(item);
+      });
+    }
+  }
+
+  function hookVue(v) {
+    if (!v || !v.prototype || v.prototype.__cleanT_hooked) return;
+    v.prototype.__cleanT_hooked = true;
+    var origT = v.prototype.$t;
+    if (origT) {
+      v.prototype.$t = function(key) {
+        var res = origT.apply(this, arguments);
+        if (typeof res === 'string' && res.indexOf('_') !== -1) {
+          return cleanString(res);
+        }
+        return res;
+      };
+    }
+    var origAsyncT = v.prototype.$asyncT;
+    if (origAsyncT) {
+      v.prototype.$asyncT = function(key) {
+        var p = origAsyncT.apply(this, arguments);
+        if (p && typeof p.then === 'function') {
+          return p.then(function(item) {
+            if (item && typeof item.value === 'string' && item.value.indexOf('_') !== -1) {
+              item.value = cleanString(item.value);
+            }
+            return item;
+          });
+        }
+        return p;
+      };
+    }
+  }
+
+  var vueCheckTimer = setInterval(function() {
+    if (window.Vue) hookVue(window.Vue);
+  }, 100);
+  setTimeout(function() { clearInterval(vueCheckTimer); }, 15000);
+
+  // ==========================================
+  // SUPABASE REALTIME STATE SYNC (Replaces localStorage)
+  // ==========================================
+  window.__supabaseState = {
+    theme: 'dark',
+    soundEnabled: true,
+    musicEnabled: true,
+    oneTapBet: false,
+    defaultStake: 10,
+    activeSelections: []
+  };
+
+  window.supabaseSync = {
+    loadPreferences: function(cb) {
+      fetch('/api/user/preferences')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          if (res && res.data) {
+            window.__supabaseState = Object.assign(window.__supabaseState, res.data);
+            if (res.data.theme) {
+              var t = res.data.theme.toLowerCase();
+              document.documentElement.setAttribute('theme', t);
+              document.documentElement.setAttribute('data-theme', t);
+              if (document.body) document.body.setAttribute('data-theme', t);
+            }
+            if (typeof cb === 'function') cb(res.data);
+          }
+        })
+        .catch(function() {});
+    },
+    savePreferences: function(prefs) {
+      window.__supabaseState = Object.assign(window.__supabaseState, prefs);
+      fetch('/api/user/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(prefs)
+      }).catch(function() {});
+    },
+    saveSelections: function(selections) {
+      fetch('/api/user/selections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(selections)
+      }).catch(function() {});
+    }
+  };
+
+  // Pre-load preferences immediately from Supabase
+  window.supabaseSync.loadPreferences();
+
+  // Intercept localStorage to transparently mirror and persist to Supabase
+  // Security: only sync whitelisted theme/preference values
+  try {
+    var _origSetItem = localStorage.setItem.bind(localStorage);
+    localStorage.setItem = function(key, val) {
+      try { _origSetItem(key, val); } catch(_) {}
+      if (key === 'theme' && (val === 'Dark' || val === 'Light')) {
+        window.supabaseSync.savePreferences({ theme: val });
+      } else if (key && key.indexOf('SoundEnabled') !== -1) {
+        window.supabaseSync.savePreferences({ soundEnabled: val === 'true' });
+      } else if (key && key.indexOf('MusicEnabled') !== -1) {
+        window.supabaseSync.savePreferences({ musicEnabled: val === 'true' });
+      } else if (key && key.indexOf('oneTapBet') !== -1) {
+        window.supabaseSync.savePreferences({ oneTapBet: val === 'true' });
+      }
+    };
+  } catch(_) {}
+
+  // ============================================================
+  // Pending Withdrawal Request Dialog (ported from sport.html)
+  // ============================================================
+  function showPendingWithdrawalDialog() {
+    if (document.getElementById('sporty-pending-request-modal')) return;
+
+    var isLight = document.documentElement.getAttribute('theme') === 'light' ||
+                  (document.body && document.body.classList.contains('light'));
+    var bgColor    = isLight ? '#ffffff' : '#20232a';
+    var titleColor = isLight ? '#1B1E25' : '#FFFFFF';
+    var textColor  = isLight ? '#353A45' : '#D2D6DC';
+
+    var overlay = document.createElement('div');
+    overlay.id = 'sporty-pending-request-modal';
+    overlay.className = 'es-dialog-wrap';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;background-color:rgba(0,0,0,0.65);z-index:999999;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;opacity:0;transition:opacity 0.2s ease;';
+
+    var dialog = document.createElement('div');
+    dialog.className = 'es-dialog opennet-dialog-style has-two-buttons';
+    dialog.style.cssText = 'background:' + bgColor + ';border-radius:6px;width:86%;max-width:380px;box-shadow:0 10px 40px rgba(0,0,0,0.6);overflow:hidden;padding:24px 22px 18px 22px;box-sizing:border-box;font-family:Roboto,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;transform:scale(0.95);transition:transform 0.2s ease;';
+
+    var head = document.createElement('div');
+    head.className = 'es-dialog-head m-dialog-head';
+    head.style.cssText = 'margin-bottom:16px;';
+    var h1 = document.createElement('h1');
+    h1.style.cssText = 'margin:0;font-size:19px;font-weight:700;color:' + titleColor + ';text-align:left;line-height:1.3;letter-spacing:-0.2px;';
+    h1.textContent = 'Pending Request';
+    head.appendChild(h1);
+
+    var body = document.createElement('div');
+    body.className = 'es-dialog-body m-dialog-body';
+    body.style.cssText = 'margin-bottom:26px;';
+    var main = document.createElement('div');
+    main.className = 'es-dialog-main m-dialog-main';
+    main.style.cssText = 'color:' + textColor + ';font-size:14.5px;line-height:1.45;text-align:left;';
+    var p1 = document.createElement('div');
+    p1.textContent = 'Your withdrawal request has been submitted, awaiting confirmation.';
+    var p2 = document.createElement('div');
+    p2.style.cssText = 'margin-top:10px;';
+    p2.textContent = 'You can check the withdrawal records in a short while.';
+    main.appendChild(p1);
+    main.appendChild(p2);
+    body.appendChild(main);
+
+    var footer = document.createElement('div');
+    footer.className = 'es-dialog-footer m-dialog-footer';
+    footer.style.cssText = 'display:flex;justify-content:flex-end;align-items:center;gap:28px;padding-top:4px;';
+
+    var txBtn = document.createElement('button');
+    txBtn.type = 'button';
+    txBtn.className = 'es-dialog-btn';
+    txBtn.style.cssText = 'background:none;border:none;font-size:15px;font-weight:700;color:#9CA0AB;cursor:pointer;padding:6px 0;outline:none;-webkit-tap-highlight-color:transparent;';
+    txBtn.textContent = 'Transactions';
+
+    var homeBtn = document.createElement('button');
+    homeBtn.type = 'button';
+    homeBtn.className = 'es-dialog-btn';
+    homeBtn.style.cssText = 'background:none;border:none;font-size:15px;font-weight:700;color:#0D9737;cursor:pointer;padding:6px 0;outline:none;-webkit-tap-highlight-color:transparent;';
+    homeBtn.textContent = 'Home';
+
+    function clearInputsAndRefresh() {
+      try {
+        var inputs = document.querySelectorAll('.withdraw-amount input, input.m-input-wap, .m-wd-gh input');
+        inputs.forEach(function(inp) {
+          inp.value = '';
+          inp.dispatchEvent(new Event('input', { bubbles: true }));
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      } catch (e) {}
+      try { fetch('/pocket/v1/wallet/balance?bizType=1').catch(function() {}); } catch (e) {}
+    }
+
+    function closeModal() {
+      overlay.style.opacity = '0';
+      dialog.style.transform = 'scale(0.95)';
+      setTimeout(function() {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 200);
+      clearInputsAndRefresh();
+    }
+
+    txBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeModal();
+      window.location.href = '/gh/m/my_accounts/transactions?from=withdraw';
+    });
+    homeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeModal();
+      window.location.href = '/gh/m/sport';
+    });
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeModal();
+    });
+
+    footer.appendChild(txBtn);
+    footer.appendChild(homeBtn);
+    dialog.appendChild(head);
+    dialog.appendChild(body);
+    dialog.appendChild(footer);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    requestAnimationFrame(function() {
+      overlay.style.opacity = '1';
+      dialog.style.transform = 'scale(1)';
+    });
+  }
+  window.__showPendingWithdrawalDialog = showPendingWithdrawalDialog;
+
+  // Withdrawal POST detection on fetch (Security: only trigger on confirmed success)
+  var _origFetchPre = window.fetch;
+  if (_origFetchPre) {
+    window.fetch = function(input, init) {
+      var urlStr = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+      var method = (init && init.method ? init.method : (input && input.method ? input.method : 'GET')).toUpperCase();
+      var isWdPost = (method === 'POST') &&
+        (urlStr.indexOf('bankTrade') !== -1 || urlStr.indexOf('bankTrades') !== -1 || urlStr.indexOf('withdraw') !== -1) &&
+        urlStr.indexOf('firstDepositState') === -1 && urlStr.indexOf('withdrawInfo') === -1;
+      var p = _origFetchPre.apply(this, arguments);
+      if (isWdPost) {
+        return p.then(function(res) {
+          try {
+            var cloned = res.clone();
+            cloned.json().then(function(d) {
+              if (d && (d.bizCode === 10000 || d.code === 0) && d.data) {
+                setTimeout(showPendingWithdrawalDialog, 150);
+              }
+            }).catch(function() {});
+          } catch (e) {}
+          return res;
+        }).catch(function(err) { throw err; });
+      }
+      return p;
+    };
+  }
+  // Direct confirm-button click fallback
+  document.addEventListener('click', function(e) {
+    try {
+      var el = e.target;
+      if (!el) return;
+      var confirmBtn = el.closest('[data-op="withdraw-confirm-button"], .withdraw-confirm-bottom-sheet .btn:not(.cancel), .m-wd-pop-cfm .btn:not(.cancel), .withdraw-confirm-btn, .withdraw-confirm-button');
+      if (!confirmBtn) {
+        var anyBtn = el.closest('button, .af-button, .btn');
+        if (anyBtn) {
+          var txt = (anyBtn.textContent || '').trim().toLowerCase();
+          var inPopup = anyBtn.closest('.withdraw-confirm-bottom-sheet, .m-wd-pop-cfm, .es-dialog-body, .bottom-sheet-wrapper');
+          if (inPopup && (txt === 'confirm' || txt === 'confirm to withdraw')) confirmBtn = anyBtn;
+        }
+      }
+      if (confirmBtn) {
+        setTimeout(function() {
+          if (window.__showPendingWithdrawalDialog) window.__showPendingWithdrawalDialog();
+        }, 350);
+      }
+    } catch (err) {}
+  }, true);
+
+
+  // Purge any stored selections from browser storage to rely solely on user selections
+  window.__lastSelectedIVTeams = [];
+  try {
+    localStorage.removeItem('__lastSelectedIVTeams');
+    sessionStorage.removeItem('__lastSelectedIVTeams');
+  } catch (_) {}
+
+  function getTeamsPayload() {
+    return null;
+  }
+
+  // 1. Fetch & XHR shims: rewrites external s.sporty.net/s.football.com to local & passes user selections
+  var _origFetch = window.fetch;
+  if (_origFetch) {
+    window.fetch = function(input, init) {
+      var urlStr = '';
+      var methodStr = 'GET';
+      try {
+        if (typeof input === 'string') {
+          urlStr = _cleanUrl(input);
+          input = urlStr;
+          if (init && init.method) methodStr = init.method.toUpperCase();
+        } else if (input && input.url) {
+          urlStr = _cleanUrl(input.url);
+          methodStr = (input.method || (init && init.method) || 'GET').toUpperCase();
+          var reqHeaders = (init && init.headers) ? init.headers : input.headers;
+          var reqInit = {
+            method: methodStr,
+            headers: reqHeaders,
+            mode: input.mode,
+            credentials: input.credentials,
+            cache: input.cache,
+            redirect: input.redirect,
+            referrer: input.referrer
+          };
+          if (methodStr !== 'GET' && methodStr !== 'HEAD') {
+            if (init && 'body' in init) reqInit.body = init.body;
+            else if (input.body) reqInit.body = input.body;
+          }
+          input = new Request(urlStr, reqInit);
+        }
+
+        if (init && init.method) {
+          methodStr = init.method.toUpperCase();
+        }
+
+        if (methodStr === 'GET' || methodStr === 'HEAD') {
+          if (init && 'body' in init) {
+            delete init.body;
+          }
+        }
+
+        if (typeof urlStr === 'string' && (
+          urlStr.indexOf('ticket/create') !== -1 ||
+          urlStr.indexOf('round/get/unsettled') !== -1 ||
+          urlStr.indexOf('round/detail') !== -1 ||
+          urlStr.indexOf('ticket/detail') !== -1 ||
+          urlStr.indexOf('round/settle') !== -1 ||
+          urlStr.indexOf('ticket/list') !== -1
+        )) {
+          var payload = getTeamsPayload();
+          if (payload) {
+            init = init || {};
+            init.headers = init.headers || {};
+            if (init.headers instanceof Headers) {
+              init.headers.set('x-selected-teams', payload);
+            } else {
+              init.headers['x-selected-teams'] = payload;
+            }
+          }
+        }
+      } catch (e) {}
+
+      var p = init !== undefined ? _origFetch.call(this, input, init) : _origFetch.call(this, input);
+      if (typeof urlStr === 'string' && urlStr.indexOf('/cms/pages/') !== -1) {
+        return p.then(function(res) {
+          return res.clone().text().then(function(txt) {
+            if (txt && !txt.trim().startsWith('<')) {
+              var data = JSON.parse(txt);
+              cleanCmsData(data);
+              return new Response(JSON.stringify(data), {
+                status: res.status,
+                statusText: res.statusText,
+                headers: res.headers
+              });
+            }
+            return res;
+          }).catch(function() { return res; });
+        }).catch(function() {
+          return new Response(JSON.stringify({ keys: {}, version: "1790182191000" }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' }
+          });
+        });
+      }
+      if (typeof urlStr === 'string' && (urlStr.indexOf('/iw/config/sport') !== -1 || urlStr.indexOf('/config/sport') !== -1)) {
+        return p.then(function(res) {
+          return res.clone().json().then(function(json) {
+            if (json) {
+              json.maxPayout = "1200000.00";
+              json.maxStake = "75000.00";
+              json.bdMaxStake = 750000000;
+              json.bdMaxPayout = 12000000000;
+              if (json.multiBetBonus) {
+                json.multiBetBonus.maxSelections = 50;
+                json.multiBetBonus.minSelections = 2;
+                json.multiBetBonus.enable = true;
+              }
+            }
+            return new Response(JSON.stringify(json), {
+              status: res.status,
+              statusText: res.statusText,
+              headers: res.headers
+            });
+          }).catch(function() { return res; });
+        });
+      }
+      return p;
+    };
+  }
+
+  var _origOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url) {
+    this._url = url;
+    if (typeof url === 'string') {
+      url = _cleanUrl(url);
+    }
+    var args = Array.prototype.slice.call(arguments);
+    args[1] = url;
+    return _origOpen.apply(this, args);
+  };
+  var _origSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(data) {
+    var self = this;
+    if (this._url && (this._url.indexOf('ticket/create') !== -1 || this._url.indexOf('round/get/unsettled') !== -1 || this._url.indexOf('round/detail') !== -1 || this._url.indexOf('ticket/detail') !== -1 || this._url.indexOf('round/settle') !== -1 || this._url.indexOf('ticket/list') !== -1)) {
+      var payload = getTeamsPayload();
+      if (payload) {
+        try {
+          this.setRequestHeader('x-selected-teams', payload);
+        } catch (_) {}
+      }
+    }
+    if (this._url && (this._url.indexOf('/iw/config/sport') !== -1 || this._url.indexOf('/config/sport') !== -1)) {
+      try {
+        var _getter = function() {
+          try {
+            var raw = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'responseText').get.call(self);
+            var json = JSON.parse(raw);
+            if (json) {
+              json.maxPayout = "1200000.00";
+              json.maxStake = "75000.00";
+              json.bdMaxStake = 750000000;
+              json.bdMaxPayout = 12000000000;
+              if (json.multiBetBonus) {
+                json.multiBetBonus.maxSelections = 50;
+                json.multiBetBonus.minSelections = 2;
+                json.multiBetBonus.enable = true;
+              }
+            }
+            return JSON.stringify(json);
+          } catch (_) {
+            return Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'responseText').get.call(self);
+          }
+        };
+        Object.defineProperty(this, 'responseText', { get: _getter, configurable: true });
+        Object.defineProperty(this, 'response', { get: _getter, configurable: true });
+      } catch (_) {}
+    }
+    return _origSend.apply(this, arguments);
+  };
+
+  // 2. DOM src & href property setters
+  try {
+    var imgDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+    if (imgDesc && imgDesc.set) {
+      var origImgSet = imgDesc.set;
+      Object.defineProperty(HTMLImageElement.prototype, 'src', {
+        set: function(val) {
+          return origImgSet.call(this, _cleanUrl(val));
+        },
+        get: imgDesc.get,
+        configurable: true,
+        enumerable: true
+      });
+    }
+
+    var mediaDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'src');
+    if (mediaDesc && mediaDesc.set) {
+      var origMediaSet = mediaDesc.set;
+      Object.defineProperty(HTMLMediaElement.prototype, 'src', {
+        set: function(val) {
+          return origMediaSet.call(this, _cleanUrl(val));
+        },
+        get: mediaDesc.get,
+        configurable: true,
+        enumerable: true
+      });
+    }
+
+    var scriptDesc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+    if (scriptDesc && scriptDesc.set) {
+      var origScriptSet = scriptDesc.set;
+      Object.defineProperty(HTMLScriptElement.prototype, 'src', {
+        set: function(val) {
+          return origScriptSet.call(this, _cleanUrl(val));
+        },
+        get: scriptDesc.get,
+        configurable: true,
+        enumerable: true
+      });
+    }
+
+    var linkDesc = Object.getOwnPropertyDescriptor(HTMLLinkElement.prototype, 'href');
+    if (linkDesc && linkDesc.set) {
+      var origLinkSet = linkDesc.set;
+      Object.defineProperty(HTMLLinkElement.prototype, 'href', {
+        set: function(val) {
+          return origLinkSet.call(this, _cleanUrl(val));
+        },
+        get: linkDesc.get,
+        configurable: true,
+        enumerable: true
+      });
+    }
+
+    var origSetAttr = Element.prototype.setAttribute;
+    Element.prototype.setAttribute = function(name, val) {
+      if (typeof val === 'string' && (name === 'src' || name === 'href' || name === 'xlink:href')) {
+        val = _cleanUrl(val);
+      }
+      return origSetAttr.call(this, name, val);
+    };
+
+    // 2b. FontFace & CSSStyleSheet injection interception
+    if (typeof window.FontFace !== 'undefined') {
+      var _origFontFace = window.FontFace;
+      window.FontFace = function(family, source, descriptors) {
+        if (typeof source === 'string') {
+          source = _cleanUrl(source);
+        }
+        return new _origFontFace(family, source, descriptors);
+      };
+      window.FontFace.prototype = _origFontFace.prototype;
+    }
+    if (typeof CSSStyleSheet !== 'undefined' && CSSStyleSheet.prototype.insertRule) {
+      var _origInsertRule = CSSStyleSheet.prototype.insertRule;
+      CSSStyleSheet.prototype.insertRule = function(rule, index) {
+        if (typeof rule === 'string') {
+          rule = _cleanUrl(rule);
+        }
+        return _origInsertRule.call(this, rule, index);
+      };
+    }
+    var _origAppendChild = Node.prototype.appendChild;
+    Node.prototype.appendChild = function(node) {
+      if (node && node.nodeName === 'STYLE' && node.textContent) {
+        node.textContent = _cleanUrl(node.textContent);
+      } else if (node && node.nodeName === 'LINK' && node.href) {
+        node.href = _cleanUrl(node.href);
+      }
+      return _origAppendChild.call(this, node);
+    };
+    var _origInsertBefore = Node.prototype.insertBefore;
+    Node.prototype.insertBefore = function(node, ref) {
+      if (node && node.nodeName === 'STYLE' && node.textContent) {
+        node.textContent = _cleanUrl(node.textContent);
+      } else if (node && node.nodeName === 'LINK' && node.href) {
+        node.href = _cleanUrl(node.href);
+      }
+      return _origInsertBefore.call(this, node, ref);
+    };
+  } catch (e) {}
+
+  // 3. Lock window.assetsRetry to a no-op so external retry scripts cannot redirect to cdn.sporty.net
+  try {
+    Object.defineProperty(window, 'assetsRetry', {
+      value: function() {},
+      writable: false,
+      configurable: false
+    });
+  } catch (e) {
+    window.assetsRetry = function() {};
+  }
+
+  // 4. Notification shim & unhandled promise rejection handler
+  try {
+    if (!('Notification' in window)) {
+      window.Notification = function() {};
+    }
+    window.Notification.permission = 'granted';
+    window.Notification.requestPermission = function(cb) {
+      if (typeof cb === 'function') cb('granted');
+      return Promise.resolve('granted');
+    };
+  } catch (e) {}
+
+  window.addEventListener('unhandledrejection', function(event) {
+    var reason = event && event.reason;
+    var name = (reason && reason.name) || '';
+    var msg = (reason && (reason.message || reason)) || '';
+    if (
+      name === 'NavigationDuplicated' ||
+      (typeof msg === 'string' && (
+        msg.indexOf("NavigationDuplicated") !== -1 ||
+        msg.indexOf("Avoided redundant navigation") !== -1 ||
+        msg.indexOf("doesn't support notification") !== -1 ||
+        msg.indexOf("Could not establish connection") !== -1
+      ))
+    ) {
+      event.preventDefault();
+    }
+  });
+})();
+</script>
+<link rel="stylesheet" href="/global/main/fonts/roboto.css">
+<style>
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400 700 900;
+  src: url('/global/main/fonts/roboto.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Roboto-Bold';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/global/main/fonts/roboto.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Roboto-Medium';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/global/main/fonts/roboto.woff2') format('woff2');
+}
+</style>
+<!-- GTM Disabled Locally -->
+<script>
+var _it=[new Date(), "1790330429218", "<!--nginx-server-time-->"];
+try {
+(function() {
+var userTheme = (function(){
+var lsTheme = localStorage.getItem('theme');
+if (lsTheme === 'Dark') return 'Dark';
+if (lsTheme === 'Light') return 'Light';
+return null;
+})()
+if (userTheme === 'Dark' || (userTheme !== 'Light' && window.matchMedia('(prefers-color-scheme: dark)')?.matches)) {
+document.documentElement.setAttribute('theme', 'dark');
+var style = document.createElement('style');
+style.innerHTML = ".m-page-loading-wrap {background:#1B1E25; color: #FFFFFF;} .m-page-loading-wrap .m-page-loading .loading-icon{background:#9CA0AB;color:#FFFFFF;}";
+document.head.appendChild(style);
+}
+})()
+} catch (e) {}
+</script>
+<link rel="shortcut icon" href="/global/main/logo/favicon.ico"/>
+<link rel="apple-touch-icon" href="/global/main/logo/144x144.png"/>
+<link rel="apple-touch-icon" sizes="114x114" href="/global/main/logo/144x144.png"/>
+<link rel="apple-touch-icon" sizes="120x120" href="/global/main/logo/144x144.png"/>
+<link rel="apple-touch-icon-precomposed" href="/global/main/logo/144x144.png"/>
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/global/main/logo/144x144.png"/>
+<link rel="apple-touch-icon-precomposed" sizes="120x120" href="/global/main/logo/144x144.png"/>
+
+
+
+
+
+
+
+<!-- Preload [popular] and [sports] icons for better LCP -->
+<!-- SEO header links -->
+
+
+
+
+
+
+
+
+
+
+
+<meta charset="utf-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="application-name" content="www.sportybet.com"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,minimal-ui" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="SportyBet"/>
+<meta name="theme-color" content="#E41827">
+<meta name="google" content="nopagereadaloud" />
+<meta content="telephone=no" name="format-detection" />
+<meta name="renderer" content="webkit"/>
+<meta name="keywords" content="Instant virtuals"/>
+<meta name="description" content="Play Instant Virtuals — Instant Football, Basketball, Dog Racing and more at SportyBet Ghana. Bet and win in seconds!"/>
+<meta name="log:path_key" content="instant_virtuals"/>
+<meta property="og:image" content="/common/main/res/b67864193fc68f87b90b7a7722752c7f.png" />
+<meta property="og:image:secure_url" content="/common/main/res/b67864193fc68f87b90b7a7722752c7f.png" />
+<meta property="og:image:type" content="image/png" />
+<meta name="google-site-verification" content="Kr8WLGx-q1oBczSWp-r25OC5MvrkUKdmaFxu4jlvIPg" />
+<meta property="og:description" content="That is Instant Virtuals !!!" />
+<meta property="og:title" content="Select to Win!" />
+<meta property="fb:app_id" content="746045042245360" />
+<meta property="og:url" content="https://www.sportybet.com/gh/m/instant-virtuals" />
+<meta property="og:site_name" content="SportyBet" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- SEO entity JSON LD data -->
+<!-- BE JSON LD data -->
+
+<title>Instant Virtuals | SportyBet</title>
+<script>
+var __debug__ = Boolean(false)
+var __countryConfig__ = {'prefix':'gh','currency':'GHS','showCurrency':'GHS','countryName':'Ghana','countryCode':'233','productCode':8}
+var countryConfig = __countryConfig__
+var __cdn__ = '/global/main/'
+var __cdnOrigin__ = window.location.origin
+var __domain__ = window.location.host
+var __baseUrl__ = '/gh/'
+var __countryX__ = ''
+var __BrandName__ = 'SportyBet'
+var __brandName__ = 'sportyBet'
+var __fbAppId__ = '433677653945061'
+var __sportyAnalyticsPublicUrl__ = ''
+var __sportyAnalyticsToken__ = ''
+var __socketUrl__ = ''
+var __sportyComUrl__ = ''
+var __liveScoreUrl__ = ''
+var __appleStoreUrl__ = '#'
+var __appSchema__ = 'sportybet'
+var __adSchema__ = 'sportybet_schema$'
+var __betGameTvPartnerCode__ = 'sportybet_com_gh'
+var __appJsBridgeChannel__ = 'com.sportybet.action.JS_EVENT'
+var __sportyRadarWidgetClientId__ = ''
+var __liveScoreIframeUrl__ = ''
+var __googlePlayUrl__ = '#'
+var __FIREBASE_AUTH_DOMAIN__ = ''
+var __FIREBASE_DATABASE_URL__ = ''
+var __FIREBASE_PROJECT_ID__ = ''
+var __FIREBASE_STORAGE_BUCKET__ = ''
+var __FIREBASE_MESSAGING_SENDER_ID__ = ''
+var __FIREBASE_APP_ID__ = ''
+var __FIREBASE_MEASUREMENT_ID__ = ''
+var __FIREBASE_NAME__ = 'sportyBet'
+var __FIREBASE_VAPID_KEY__ = ''
+var __LEGITIMUZ_HOST__ = ''
+var __LEGITIMUZ_TOKEN__ = ''
+var __LEGITIMUZ_SCRIPT__ = ''
+var __WHOYOU_DOMAIN__ = ''
+var __WALLET_DOC_KEY__ = ''
+var __FARO_DOMAIN__ = ''
+var __DEPLOYING__ = 'int,cd,et'
+var __READY_FOR_ACCESS__ = 'ke,gh,ng,tz,zm,br,za,mx,cm,mz'
+var __AWS_WAF_JS_SCRIPT__ = ''
+</script>
+<script type="text/javascript">
+var loginStatus = true;
+var regSW = false;
+var operId = '3';
+var userCountry = 'gh'
+var userCurrency = 'GHS'
+var userLanguage = 'en-US,en;q=0.9'
+var reqHost = window.location.host
+var reqCountryShortCode = 'gh'
+var sportsCfg = {
+min: '0.1',
+max: '75000',
+default: '1',
+potWinMax: '1200000'
+};
+var selectionsCfg = {
+max: '50'
+};
+var numberpadCfg = {
+numberpadQuickButton1: '3',
+numberpadQuickButton2: '5',
+numberpadQuickButton3: '10',
+};
+var jackpotCfg = {
+min: '1'
+};
+var cashoutCfg = {
+min: '0.01',
+max: '1200000'
+}
+var depositCfg = {
+min: '1',
+max: '50000'
+}
+var withdrawCfg = {
+min: '1',
+max: '75000',
+fee: '0',
+feeThreshold: '2000',
+withdrawCancelFee: '0',
+partnerDepositCommission: '',
+partnerWithdrawFee: '',
+pinTip: ''
+}
+var transThreshold = '2500000';
+var bonusCfg = {
+max: '1200000'
+}
+var flexiCfg = {
+oddsThreshold: '1.01'
+}
+var flexiBetConfig = {"flexibleMinOdds":"1.01","flexiAverageWeightedRtpMultiplier":1.0,"status":0,"oddsKey":0.65,"oddsKeys":{"3":0.95,"4":0.9,"5":0.9,"6":0.85,"7":0.85,"8":0.8,"9":0.8,"10":0.8,"11":0.75,"12":0.75,"13":0.75,"14":0.75,"15":0.65,"16":0.65,"17":0.65,"18":0.6,"19":0.55,"20":0.55,"21":0.55,"22":0.55,"23":0.5,"24":0.45,"25":0.45,"26":0.45,"27":0.45,"28":0.45,"29":0.4,"30":0.4,"31":0.35,"32":0.3,"33":0.25,"34":0.25,"35":0.25,"36":0.25,"37":0.25,"38":0.25,"39":0.2,"40":0.2,"41":0.2,"42":0.2,"43":0.17,"44":0.17,"45":0.17,"46":0.17,"47":0.15,"48":0.15,"49":0.15,"50":0.15}}
+var boostCfg = {
+oddsThreshold: '1.02'
+}
+var country = 'gh';
+var ipCountry = 'gh';
+var ipCountryCode = 'GH';
+var shareTitle = 'Select to Win!'
+var TAX = {
+rate: '0',
+type: 'none'
+}
+var VIRTUAL_TAX = {
+rate: '0',
+type: ''
+}
+var exciseTaxRateToShow = '0'
+var exciseTaxRateToCharge = '0'
+var exciseTaxRateStakeBonus = '0'
+var virtualExciseTaxRateToShow = '0'
+var virtualExciseTaxRateToCharge = '0'
+var virtualExciseTaxRateStakeBonus = '0'
+var simCutBetStatus = '0'
+var IBPromotePopupTimes = '5'
+var IVSupportMultipleSport = true
+var feAnalyticsRecordApiErrorEnable = true
+var gamesConfig = [{"id":"flip-da-coin","type":"india-games","name":"Flip da' Coin","launch_rate":0,"pic_url":"/common/main/res/f3b49680d2856abd798c1b1e250bd694.png","launch_url":"games/flip-da-coin","online_num_key":"countOfFlipDaCoin"},{"id":"turbo-games/aviator","type":"india-games","name":"Aviator","launch_rate":0,"pic_url":"/sportygames/lobby_banner/1648540402134.png","launch_url":"/games/sportygames?game=turbo-games/aviator","online_num_key":"countOfAviator"},{"id":"spin-da-bottle","type":"india-games","name":"Spin Da' Bottle","launch_rate":0,"pic_url":"/common/main/res/1fb1f9ff6d8417c80ebc28cef92bf970.png","launch_url":"games/spin-da-bottle","online_num_key":"countOfSpinDaBottle"},{"id":"red-black","type":"india-game","name":"Red-Black","launch_rate":0,"pic_url":"/common/main/res/f9b5f1e24b0dc17d8799444dabe5e64a.png","launch_url":"games/red-black","online_num_key":"countOfRedBlack"},{"id":"super-hero","type":"india-games","name":"Super Hero","launch_rate":0,"pic_url":"/common/main/res/5c244dd872207dc67f92cb35b8cef7c3.png","launch_url":"games/super-hero","online_num_key":"countOfSuperHero"},{"id":"sporty-roulette","type":"custom","name":"Sporty Roulette","launch_rate":0,"pic_url":"/common/main/res/ca11c6474c3756ad3acfdeaa9ac276ec.png","launch_url":"/games/roulette","online_num_key":"countOfRoulette"},{"id":"turbo-games/dice","type":"india-games","name":"Dice","launch_rate":0,"pic_url":"/sportygames/lobby_banner/1648540432033.png","launch_url":"/games/sportygames?game=turbo-games/dice","online_num_key":"countOfDice"},{"id":"turbo-games/goal","type":"india-games","name":"Goal","launch_rate":0,"pic_url":"/sportygames/lobby_banner/1648540376516.png","launch_url":"/games/sportygames?game=turbo-games/goal","online_num_key":"countOfGoal"},{"id":"turbo-games/plinko","type":"india-games","name":"Plinko","launch_rate":0,"pic_url":"/sportygames/lobby_banner/1648540347199.png","launch_url":"/games/sportygames?game=turbo-games/plinko","online_num_key":"countOfPlinko"},{"id":"turbo-games/mines","type":"india-games","name":"Mines","launch_rate":0,"pic_url":"/sportygames/lobby_banner/1648540320127.png","launch_url":"/games/sportygames?game=turbo-games/mines","online_num_key":"countOfMines"},{"id":"turbo-games/hi-lo","type":"india-games","name":"Turbo HiLo","launch_rate":0,"pic_url":"/sportygames/lobby_banner/1648540291968.png","launch_url":"/games/sportygames?game=turbo-games/hi-lo","online_num_key":"countOfHilo"},{"id":"turbo-games/mini-roulette","type":"india-games","name":"Mini Roulette","launch_rate":0,"pic_url":"/sportygames/lobby_banner/1648540232060.png","launch_url":"/games/sportygames?game=turbo-games/mini-roulette","online_num_key":"countOfMiniRoulette"},{"id":"turbo-keno","type":"india-games","name":"Turbo Keno","launch_rate":0,"pic_url":"/sportygames/lobby_banner/1648540266057.png","launch_url":"/games/sportygames?game=turbo-keno","online_num_key":"countOfKeno"},{"id":"even-odd","type":"india-games","name":"Even Odd","launch_rate":0,"pic_url":"/common/main/res/8519527ffb72789a3c12cccd14d42df3.png","launch_url":"games/even-odd","online_num_key":"countOfEvenOdd"},{"id":"hilo","type":"india-game","name":"Sporty Hi-Lo","launch_rate":0,"pic_url":"/common/main/res/d6b60715735e5d9e675b9383bab81781.png","launch_url":"/games/sportygames?game=hilo","online_num_key":"countOfHiLo"},{"id":"spin-to-win","type":"india-game","name":"Spin2Win","launch_rate":0,"pic_url":"/common/main/res/c06e43c4253d1430260607f8f0e815c2.png","launch_url":"games/spin-to-win","online_num_key":"countOfSpin2Win"},{"id":"sic-bo","type":"india-games","name":"SicBo","launch_rate":0,"pic_url":"/common/main/res/ab40d7945054629add00863b6cfdb0e0.png","launch_url":"games/sic-bo","online_num_key":"countOfSicBo"},{"id":"blackjack","type":"india-games","name":"Blackjack","launch_rate":0,"pic_url":"/common/main/res/53dcdd528c8b5b0e74164af4173d4b8.png","launch_url":"games/blackjack","online_num_key":"countOfBlackjack"},{"id":"sporty-soccer","type":"custom","name":"Sporty Soccer","launch_rate":0,"pic_url":"/common/main/res/6a1e28f108a1a24a780943d36f683967.png","launch_url":"/games/sportysoccer","online_num_key":"countOfSportySoccer"},{"id":"lucky-goal","type":"india-games","name":"Sporty Lucky Goal","launch_rate":0,"pic_url":"/common/main/res/bcb8945eb76155757bdad51c29912816.png","launch_url":"/games/sportygames?game=lucky-goal","online_num_key":"countOfLuckyGoal"},{"id":"sporty-six","type":"india-game","name":"SportyBet Sporty6","launch_rate":0,"pic_url":"/common/main/res/f1fe8e21888f1a9cd75749829afa27e0.png","launch_url":"/games/sportygames?game=sporty-six","online_num_key":"countOfSporty6"},{"id":"keno","type":"india-game","name":"Sporty Keno","launch_rate":0,"pic_url":"/common/main/res/46ece3af4d85cff4ef80f4d86530108e.png","launch_url":"/games/sportygames?game=keno","online_num_key":"countOfKeno"},{"id":"stud-poker","type":"india-games","name":"Sporty Stud Poker","launch_rate":0,"pic_url":"/common/main/res/8c3dc6678ee7ce1304e24976de9e531b.png","launch_url":"/games/sportygames?game=stud-poker","online_num_key":"countOfStudPoker"},{"id":"live-games","type":"custom","name":"Live Games","launch_rate":0,"pic_url":"/ke/main/res/8337b77ee05ec2ce2ce838c77dd7a14e.png","launch_url":"/livegames","online_num_key":"countOfLiveGames"},{"id":"instant-virtuals","type":"custom","name":"Instant Virtuals","launch_rate":100,"pic_url":"/common/main/res/b67864193fc68f87b90b7a7722752c7f.png","launch_url":"/instant-virtuals","online_num_key":"countOfInstantVirtuals"},{"id":"lucky-poker","type":"custom","name":"Lucky Poker","launch_rate":0,"pic_url":"/gh/ms/spr_game_poker.png","launch_url":"/games/luckypoker","online_num_key":"countOfLuckyPoker"},{"id":"lucky-numbers","type":"custom","name":"Lucky Numbers","launch_rate":"100","pic_url":"/cms/game_lobby_banner_num_0ad1b6c20c.png","launch_url":"/lucky-numbers","online_num_key":"countOfLuckyNumbers"}]
+var virtualsLobbyConfig = [{"id":"instant-virtuals","type":"custom","name":"Instant Virtuals","launch_rate":100,"pic_url":"/ke/main/res/20259a083389d1c732a19b81a86ed363.png","launch_url":"/sporty-instant-virtuals","online_num_key":"countOfInstantVirtuals"},{"id":"sporty-sim","type":"custom","name":"Sporty SIM","launch_rate":100,"pic_url":"/cms/SIM_f35ab52fe3.png","launch_url":"/sport/football?betslipMode=sim","online_num_key":"countOfSportySIM"},{"id":"sporty-live-virtual-football","type":"custom","name":"vFootball","launch_rate":100,"pic_url":"/cms/v_Football_3e1a145b06.png","launch_url":"/sport/vFootball?betslipMode=real","online_num_key":"countOfVFootball"},{"id":"golden-virtuals","type":"custom","name":"Golden Virtuals","launch_rate":100,"pic_url":"/ke/main/res/a9ec8f26dcccd14b136ec0c56ed1f782.png","launch_url":"/virtual?v4=true&source=home","online_num_key":"countOfGoldenVirtual"},{"id":"scheduled-virtuals","type":"custom","name":"Scheduled Virtuals","launch_rate":100,"pic_url":"/ke/main/res/5724bedc1f3ce90aeb5e9fc0dfb0f67d.png","launch_url":"/virtual","online_num_key":"countOfScheduleVirtual"}]
+var virtualsLobbyConfigPTBR = []
+var virtualsLobbyConfigFRFR = []
+var virtualsLobbyConfigMainEntrance = [{"itemName":"Instant Football","redirectUrl":"/instant-virtuals","enable":true,"updateRequiredAppVersion":null,"availableAppVersion":null,"availableUserType":"all","entranceName":"instant_football","imgUrl":"entrance_bg_instant_football","label":"popular","size":"Large"},{"itemName":"Scheduled Football","redirectUrl":"/sporty-scheduled-virtual","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"scheduled_football","imgUrl":"entrance_bg_scheduled_football","label":"new","size":"Small"},{"itemName":"Sporty Legends","redirectUrl":"/sporty-legends","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"sporty_legends","imgUrl":"entrance_bg_sporty_legends","label":"new","size":"Small"},{"itemName":" vFootball","redirectUrl":"/sport/vFootball?betslipMode=real","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"v_football","imgUrl":"entrance_bg_v_football","label":"popular","size":"Small"},{"itemName":"Sporty Penalty","redirectUrl":"/sporty-penalty","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"sporty_penalty","imgUrl":"entrance_bg_sporty_penalty","label":"new","size":"Small"},{"itemName":"Instant African Cup","redirectUrl":"/instant-virtuals/quickgame?sportId=sr%3Asport%3A1-3-1","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"sporty_african_cup","imgUrl":"entrance_bg_sporty_african_cup","label":"new","size":"Small"},{"itemName":"Instant World Cup","redirectUrl":"/instant-virtuals/quickgame?sportId=sr%3Asport%3A1-3-2","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"instant_world_cup","imgUrl":"entrance_bg_instant_world_cup","label":"new","size":"Small"},{"itemName":"Instant Basketball","redirectUrl":"/instant-virtuals?sportId=sr:sport:2","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"instant_basketball","imgUrl":"entrance_bg_instant_basketball","label":"popular","size":"Small"},{"itemName":"Instant Dog Racing","redirectUrl":"/instant-racing/detail","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"instant_racing_dog","imgUrl":"entrance_bg_instant_racing_dog","label":"new","size":"Small"},{"itemName":"Sporty SIM","redirectUrl":"/sport/football?betslipMode=sim","enable":true,"updateRequiredAppVersion":null,"availableAppVersion":null,"availableUserType":"all","entranceName":"sporty_sim","imgUrl":"entrance_bg_sporty_sim","label":"instant","size":"Small"},{"itemName":"Scheduled Virtuals","redirectUrl":"/virtual","enable":true,"updateRequiredAppVersion":null,"availableAppVersion":null,"availableUserType":"all","entranceName":"schedule_virtuals","imgUrl":"entrance_bg_schedule_virtuals","label":"none","size":"Small"},{"itemName":"Golden Virtuals","redirectUrl":"/virtual?v4=true","enable":true,"updateRequiredAppVersion":null,"availableAppVersion":null,"availableUserType":"all","entranceName":"golden_virtuals","imgUrl":"entrance_bg_golden_virtuals","label":"none","size":"Small"},{"itemName":"Live Betting","redirectUrl":"/sport/vFootball/live_list?filterOrigin=virtuals","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","entranceName":"live_betting","imgUrl":"entrance_bg_live_betting","label":"none","size":"Small"}]
+var virtualsLobbyConfigBanner = [{"itemName":"Virtual World Cup","redirectUrl":"/sport/vFootball/sv:category:202120006/sv:league:6?sort=2&marketId=1","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"virtual_wc26_vfootball"},{"itemName":"SIM_1up_2up","redirectUrl":"https://www.sportybet.com/gh/m/sport/football?betslipMode=sim&sort=0&market=oneUp","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"sim_1up_2up_launch_awareness"},{"itemName":"WIN EARLY WITH 1 GOAL LEAD","redirectUrl":"https://www.sportybet.com/gh/applink/instantWin","enable":false,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"win_early_with_1_goal_lead"},{"itemName":"Sporty Virtual Cashback","redirectUrl":"https://www.sportybet.com/gh/m/promotions/content/sporty-virtual-cashback?activityId=2026031915073301244","enable":false,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"banner_sporty_virtual_cashback"},{"itemName":"Sporty African Cup","redirectUrl":"https://www.sportybet.com/gh/applink/instantWin?sportId=sr:sport:1-3-1","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"banner_sporty_african_cup"},{"itemName":"Instant Virtuals - Club World Cup","redirectUrl":"https://www.sportybet.com/gh/applink/instantWin?sportId=sr:sport:1&leagueId=250603100000lea00000001","enable":false,"updateRequiredAppVersion":null,"availableAppVersion":null,"availableUserType":"all","imgUrl":"banner_iv_bet_builder"},{"itemName":"Instant Virtuals - Sporty USA","redirectUrl":"https://www.sportybet.com/gh/m/instant-virtuals?sportId=sr:sport:2","enable":false,"updateRequiredAppVersion":null,"availableAppVersion":null,"availableUserType":"all","imgUrl":"banner_iv_champion_league"},{"itemName":"Instant Virtuals - Build and Go","redirectUrl":"https://www.sportybet.com/gh/applink/featuredBNG","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"banner_iv_build_and_go"},{"itemName":"Instant Dog Racing","redirectUrl":"https://www.sportybet.com/gh/m/instant-racing/detail","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"banner_instant_dog_racing"},{"itemName":"Sporty Legends","redirectUrl":"https://www.sportybet.com/gh/applink/sportyLegends?sportId=sr:sport:3","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"banner_sporty_legends"},{"itemName":"Sporty Penalty","redirectUrl":"/sporty-penalty","enable":true,"updateRequiredAppVersion":"","availableAppVersion":"","availableUserType":"all","imgUrl":"banner_sporty_penalty"}]
+var virtualsLobbyBNGFloatButtonEnable = true
+var launchRate = [{"featureId":"1","launchRate":100},{"featureId":"3","launchRate":100}]
+var csConfig = {"show_main_icon":false,"show_my_requests":true,"sporty_desk_launch_rate":100}
+var pleasedPercentage = '100'
+var availableTwoWayOTP = false
+var navBottomGameWap = true
+var headerNavGameWeb = true
+var ghNewPaymentRatio = 100
+var activationSwitch = true
+var context_version = {"az_menu":"1779809477000","bet_history":"1789162347000","cashout":"1790151654000","comment_details":"1779885791000","common_dates":"1784906898000","common_feedback":"1782727858000","common_functions":"1790198190000","common_games":"1788764098000","common_helps":"1786730695000","common_info_setting":"1784829033000","common_otp_verify":"1784880291000","common_payment_providers":"1789456414000","common_sports":"1786631923000","component_betslip":"1789501725000","component_broadcast":"1779889330000","component_bvn":"1779889501000","component_cashout":"1779890179000","component_cash_gift_popup":"1779889694000","component_coming_soon":"1779890219000","component_confirm_currency":"1779891850000","component_coupon":"1784204914000","component_crypto_address_detail":"1779895896000","component_event":"1779896633000","component_live_stat":"1785987277000","component_live_virtual_match_tracker":"1779898288000","component_name_binding_dialog":"1779898499000","component_odds_filters":"1782742853000","component_phishing":"1779900120000","component_pop_dialog":"1789147464000","component_pop_user_center":"1779901558000","component_register":"1779956330000","component_sporty_bank":"1779956594000","component_supporter":"1789501637000","component_two_fa":"1779957554000","component_wap_share_bet":"1789162130000","component_withdraw_block_tip":"1779981118000","component_withdraw_pin":"1788193938000","download_app":"1788189415000","gift":"1790267742000","help.contact-us":"1773416580000","identity_verification":"1787216712000","jackpot":"1788963956000","live":"1780065922000","live_result":"1788345838000","live_virtual":"1780049649000","main_footer":"1789113847000","main_navbar":"1787801536000","message":"1780050765000","my_account":"1780050971000","my_favourites":"1780051037000","my_favourites_settings":"1780051158000","page_asset_added":"1780051655000","page_deactivate":"1786536352000","page_email_verify":"1780052317000","page_fb_login":"1780052517000","page_help_contact_us":"1786375165000","page_instant_virtual":"1790182191000","page_load_code":"1786954373000","page_login":"1790170601000","page_payment_crypto":"1788367386000","page_sporty":"1783343323000","page_transaction":"1789129312000","page_virtual":"1787901310000","page_withdraw":"1789129172000","pc_home":"1780057203000","pc_layout_right":"1780057257000","prematch":"1780057832000","promotion_list":"1782491748000","register_login_int":"1786507616000","reg_succ":"1780065333000","self_exclusion":"1783093976000","simulate_game":"1783425424000","sports_menu":"1780056679000","sportycom_bo_assets":"1780053451000","sporty_soccer":"1789500804000","swipe_bet":"1780053354000","wap_download_app":"1788189385000","wap_home":"1789362469000","wap_main_bottom_nav":"1785495811000","wap_me":"1780051171000","wap_profile":"1780050949000","wap_search":"1780050843000","wap_setting":"1782210179000","multi_maker":"1780050839000","page_gift_grab":"1789484404000","html_tag":"1788336804000","slot_game":"1780057312000","page_instant_virtual_be":"1786540076000","sporty_tv":"1780053770000","image_url":"1790181741000","app_common":"1790175121000","common_bet_ways":"1784204452000","game_roulette":"1789501556000","sporty_bingo":"1780056372000","component_boleto_deposit_info":"1779889158000","lucky_wheel":"1780050214000","page_captcha":"1780051727000","event_label":"1779985453000","about_to_pay_vamount_no_lineup":"1789502167000","sporty_news":"1780055977000","page_payment":"1790164994000","me_page_guide":"1780050532000","page_code_hub":"1790177449000","transaction_trade_code":"1789714141000","app_widget":"1785496223000","verify_bet":"1780052237000","primary_phone":"1789501037000","feedback":"1780041524000","page_notification_center":"1780054554000","sg_featured_games":"1786955871000","sg_featured_games_categories":"1779824474000","component_name_confirmation_dialog":"1779898728000","bet_builder":"1782475954000","personal_page":"1790165075000","biometrics_authentication":"1779876255000","page_loyalty":"1790237206000","odds_format":"1780051289000","account_protection":"1780911110000","component_bore_draw":"1780933680000","page_custom_codes":"1780052098000","component_sporty_banner":"1781253939000","page_creator_credits":"1780051977000","page_virtuals_lobby":"1790109292000","register_login_br":"1789069295000","register_signup_br":"1790151915000","app_remote_cms_test_page":"1774259051000","telegram":"1780053268000","page_limits":"1789373943000","page_time_alerts":"1780056229000","page_my_pin":"1780054404000","email_change":"1786535398000","dob_verification":"1776347776000","sg_slot_common":"1788509253000","component_assign_custom_code":"1783434509000","device_management":"1779982509000","page_virtual_promotion_popup":"1790182416000","landing":"1790079725000","unique_codes":"1780053115000","page_sporty_recap":"1781209411000","page_coming_soon":"1780394095000","playtime_control":"1790151751000","page_lucky_numbers":"1788817126000","sporty_stories":"1789718616000","currency_symbols":"1787218143000","page_set_password":"1782988524000","world_cup_tournament":"1785417647000","world_cup_mission":"1780882474000","marketing_event_feed":"1780588817000","sg_sugar_dash":"1782135412000","page_survivor":"1789910993000","sporty_picks":"1787669910000","help.how-to-play.sms-tutorials":"1747293953000","help.how-to-play.games":"1784748946000","help.about.privacy-policy":"1784886665000","help.how-to-play.virtuals":"1782731341000","help.how-to-play.live-games":"1787413522000","help.how-to-play":"1788964922000","help.about.responsible-gaming":"1787409802000","help.how-to-play.others":"1787592057000","help.how-to-play.faq":"1790092054000","help.how-to-play.sports":"1790327285000","help.about.terms-and-conditions":"1789997261000","help.account_security":"1780045142000","help.about":"1787049476000","help.about.cookie-policy":"1747293889000","promotion.content.how_to_register":"1776184239000","promotion.content.pursuitofhappinessapp":"1763379716000","promotion.content.pursuitofhappiness":"1753443233000","promotion.content.megajackpot":"1747294054000","promotion.content.registrationgift":"1756390015000","promotion.content.blackfriday":"1747294054000","promotion.content.sportysoccer":"1780062725000","promotion.content.sporty6":"1753433357000","promotion.content.spin2win":"1780062342000","promotion.content.hilo":"1755614217000","promotion.content.redblack":"1753433493000","promotion.landing.registrationgift":"1753878336000","promotion.content.security":"1747294053000","promotion.best_odds":"1753434031000","promotion.landing.security":"1747294052000","promotion.deposit_register":"1753433915000","promotion.register":"1753433074000","promotion.content.casinocarnivalapp":"1747294052000","promotion.content.casinocarnival":"1747294051000","promotion.first_deposit":"1785310845000","promotion.content.sportysaviour":"1780132399000","promotion.content.sportysaviourapp":"1747294044000","promotion.content.worldcup2022app":"1747294050000","promotion.content.worldcup2022":"1747294034000","promotion.content.redblackrumble":"1747294046000","promotion.content.redblackrumbleapp":"1747294045000","promotion.content.registration_gift":"1747293917000","promotion.content.live-odds-boost":"1787072230000","promotion.content.br_free_bet":"1747294004000","promotion.content.br_free_bet_app":"1747294005000","promotion.content.live_odds_boost_app":"1788259699000","promotion.content.first_bet_cashback":"1747293999000","promotion.content.br_libertadores_cashback":"1747293999000","promotion.content.supersonic":"1753885382000","promotion.content.afc_asia_cup":"1747294031000","promotion.content.finals_frenzy":"1747294030000","promotion.content.brasil_state_league_finals":"1747293997000","promotion.content.free_spins_bonanza":"1785318586000","promotion.content.live_gift_grab":"1747293902000","promotion.content.double_winnings_on_goalscorers":"1753431342000","promotion.content.consistency_bonus":"1747293979000","promotion.content.fortune_games":"1747293975000","promotion.content.vfootball_winning_streak":"1753885395000","promotion.content.live_gift_grab5":"1747293939000","promotion.content.multiple-bet-bonus":"1784819033000","promotion.content.live_gift_grab4":"1747293910000","promotion.content.live_gift_grab3":"1747293899000","promotion.content.live_gift_grab2":"1747293900000","promotion.content.live_gift_grab1":"1747293901000","promotion.content.holiday_rush":"1781700042000","promotion.content.onecut":"1785146940000","promotion.content.the_special_one":"1747293884000","promotion.content.kash_drops":"1747293863000","promotion.content.fridaycrash_and_cash":"1747293836000","promotion.content.custom_code_challenge":"1753166206000","promotion.content.kalamba":"1753884703000","promotion.content.hat-trip":"1751457737000","promotion.content.pick-of-the-week":"1754404714000","promotion.content.segundas_sporty_hero":"1768303732000","promotion.content.pick_of_the_week":"1764137705000","promotion.content.liga_mx_insurance":"1768321294000","promotion.content.black_friday_rain":"1781608202000","promotion.content.slots_premiados":"1769851423000","promotion.content.roleta-da-sorte":"1785316759000","promotion.content.sportyjet_rain":"1764407331000","promotion.content.sportyhero_rain":"1772301982000","promotion.content.sportyhero-rain":"1764407365000","promotion.content.sportyhero_rain_mx":"1772992859000","promotion.content.aviatorraindrop":"1782491768000","promotion.content.rugby_blitz":"1781607997000","promotion.content.afcon_free_bets":"1767188137000","promotion.content.afcon_knockout_stage_insurance":"1767188115000","promotion.content.firstdayreward":"1772301954000","promotion.content.crazy_cashback":"1788679439000","promotion.content.jokers_jewels":"1782492619000","promotion.content.mineiro_progressivo":"1768395899000","promotion.content.sportykick_rain":"1781607947000","promotion.content.slingo_spin_mania":"1774802715000","promotion.content.evolution_free_spins":"1781607678000","promotion.content.pragmatic_freespins_mania":"1781097177000","promotion.content.cosmic_spin":"1769780287000","promotion.content.kalamba_tournaments_and_kashdrops":"1770283558000","promotion.content.free-spins-mania-pragmatic":"1783709202000","promotion.my_referrals":"1782492744000","promotion.content.rain_rewards":"1785063545000","promotion.content.carnival_rush":"1771243569000","promotion.content.champions_tournament":"1782492081000","promotion.content.welcome_rewards":"1782492648000","promotion.content.daily_rains":"1786983466000","promotion.content.sporty_hero_rain_mx":"1771173457000","promotion.content.fugu_rain":"1772299485000","promotion.content.bonus_da_sorte":"1774025745000","promotion.content.torneio_aviator":"1781176073000","promotion.content.free_spins_cross_sell":"1773779655000","promotion.content.new_users":"1773682610000","promotion.content.drops_and_wins_2026":"1784814318000","promotion.content.club-sporty":"1784814842000","promotion.content.earlygoal":"1784125778000","promotion.content.1up":"1784107933000","promotion.content.flexible-bet":"1784909329000","promotion.content.bore-draw":"1784635161000","promotion.content.first_deposit_lucky_wheel":"1789971987000","promotion.content.anywin":"1784620897000","promotion.content.sporty-loyalty":"1784035310000","promotion.content.betbuilder":"1784635801000","promotion.content.2up":"1786431600000","promotion.content.pfl_africa_giveaway":"1773656001000","promotion.content.boredraw":"1773656175000","promotion.content.betbuildermx":"1773656196000","promotion.content.bet-builder":"1778099424000","promotion.content.one-cut":"1781778555000","promotion.content.club-sporty-test":"1774599538000","promotion.content.live-boost":"1780061503000","promotion.content.1up_br":"1778098802000","promotion.content.2up-test":"1773660053000","promotion.content.load-code":"1778099526000","promotion.content.afcon_southafrica":"1773660124000","promotion.content.oneleg_out":"1773660143000","promotion.content.flexible-test":"1773660159000","promotion.content.experience_laliga_live":"1773660168000","promotion.content.match-alerts":"1781608454000","promotion.content.flexbet":"1784035499000","promotion.content.realmadrid_insurance":"1773660219000","promotion.content.instantvirtual_afcon":"1773660362000","promotion.content.back_your_champion":"1773660376000","promotion.content.afcon_extra_time_insurance":"1773660386000","promotion.content.afcon2024":"1773660396000","promotion.content.extratimepromo":"1773660410000","promotion.content.sportyjet_mania":"1780132559000","promotion.content.stake-n-spin_bonanza":"1785316185000","promotion.content.corrida_da_fortuna":"1773684624000","promotion.content.giros_da_fortuna":"1773684647000","promotion.content.fortunespins_br":"1777649122000","promotion.content.skyward_deluxe":"1773686986000","promotion.content.mission_mania":"1782492631000","promotion.content.pick-of-the-week_1punch":"1773687065000","promotion.content.jollof_wars":"1773687089000","promotion.content.sportyjetmania":"1773687152000","promotion.content.sportyjet-mania":"1773687159000","promotion.content.sporty_jet_friday":"1773687167000","promotion.content.aviator_mania":"1773687201000","promotion.content.drops_and_wins":"1781607606000","promotion.content.sporty_hero_rain":"1773687223000","promotion.content.sweet_holiday_chase":"1773687255000","promotion.content.wildly_sweet":"1773687261000","promotion.content.game_of_the_week":"1781608107000","promotion.content.aviator_network_tournament":"1781608128000","promotion.content.welcome_week":"1773687288000","promotion.content.fruit_hunt":"1781608237000","promotion.content.blazingcashdrops":"1773687302000","promotion.content.natal_premiado":"1773687310000","promotion.content.slot-tournament-br":"1773687317000","promotion.content.aviator_rain":"1774105802000","promotion.content.halloween-premiado-br":"1773687340000","promotion.content.drop_and_win2":"1773687348000","promotion.content.sporty_hero_chuva":"1773687355000","promotion.content.kick_off_carnival":"1773687360000","promotion.content.dropsandwins":"1773687433000","promotion.content.carnival_slot_prize_drops":"1773687456000","promotion.content.sporty-virtual-cashback":"1774523424000","promotion.content.aviator_new_user":"1774830956000","promotion.content.bet_and_get":"1775744686000","promotion.content.evo_cash_mania":"1775729319000","promotion.content.easter_mega_hunt":"1774915443000","promotion.content.aviator_missions":"1789208305000","promotion.content.kash_drops_2026":"1776806979000","promotion.content.roleta-da-sorte-teste":"1774970702000","promotion.content.mexico-portugal":"1774970707000","promotion.content.reto_crash":"1780141220000","promotion.content.jelly_express":"1775552221000","promotion.content.goo_roulette":"1776361807000","promotion.content.crazy_cashback_category":"1788679443000","promotion.content.multiverso_de_casino":"1780141466000","promotion.content.azteca-reapertura":"1776092340000","promotion.content.parlay":"1777553076000","promotion.content.template":"1776092366000","promotion.content.endrick":"1776092374000","promotion.content.laliga-aposta-premiada":"1776092378000","promotion.content.bolao":"1784136129000","promotion.content.quiniela":"1776092386000","promotion.content.laliga-carnaval-de-premios":"1776092392000","promotion.content.laliga-roleta-da-sorte":"1777481167000","promotion.content.sportybowl_touchdowns":"1776092404000","promotion.content.win_with_canelo":"1777472101000","promotion.content.win_with_canelo_test3":"1777472096000","promotion.content.goles_premiados":"1776092418000","promotion.content.laliga_parceria":"1776092421000","promotion.content.consent_form":"1776092425000","promotion.content.alagoano-sportybet":"1776092431000","promotion.content.gols-rapidos":"1784035088000","promotion.content.sporty-missions":"1778098655000","promotion.content.win_with_canelo_test1":"1777472189000","promotion.content.cashback_loco":"1776092450000","promotion.content.promocao-brasileirao":"1776092454000","promotion.content.champions-league-final":"1776092460000","promotion.content.europaleague-final":"1776092465000","promotion.content.ida-volta":"1776092468000","promotion.content.fiveroundrumble":"1776092475000","promotion.content.vive_la_ruleta":"1776092481000","promotion.content.champions_clash":"1781608283000","promotion.content.bono_dia_un":"1776092490000","promotion.content.sportyjet_rain_test":"1776092495000","promotion.content.realmadrid_fever":"1776092499000","promotion.content.payback_paradise":"1776092503000","promotion.content.fortune-roulette":"1776092508000","promotion.content.double_down_delight":"1776092512000","promotion.content.balloon_bash":"1776092519000","promotion.content.may_crash_carnival":"1776092523000","promotion.content.newexample":"1776092527000","promotion.content.bonus_europeu":"1776092531000","promotion.content.fortune_tiger_free_spins":"1776092535000","promotion.content.blackjackleague":"1776092541000","promotion.content.carnival_cash_crash":"1776092544000","promotion.content.cashback_carnival":"1776092548000","promotion.content.boost_your_tier":"1776092552000","promotion.content.aviatorcashback":"1776092556000","promotion.content.guia_depositos_saques":"1776092560000","promotion.content.guia_depositos_saques_web":"1776092564000","promotion.content.slot_tournament":"1776092571000","promotion.content.daily_missions":"1776092575000","promotion.content.mamelodisundown_newuserstest":"1776092581000","promotion.content.kalamba_test":"1776092585000","promotion.content.aviator_rain_test":"1776092589000","promotion.content.mundial_clubes":"1776092597000","promotion.content.casino_first_bet_reward":"1776092600000","promotion.content.eliminatorias_2025":"1776092604000","promotion.content.skyward_test":"1776092607000","promotion.content.missoes_br":"1776092615000","promotion.content.daily_rains_category":"1784802043000","promotion.content.champions_tournament_category":"1782492209000","promotion.content.second-chance-cashback":"1776672602000","promotion.content.sportysaviour_category":"1780132469000","promotion.content.free-spins-mania-pragmatic_category":"1783708984000","promotion.content.drops_and_wins_category":"1788443863000","promotion.content.blackjack_holiday_tournament":"1776184221000","promotion.content.user_migration":"1776184227000","promotion.content.br_legislation2025":"1788454041000","promotion.content.leaderboard_supremacy":"1776184248000","promotion.content.new-domain-br":"1776184256000","promotion.content.champions-league-semi-final":"1776184262000","promotion.content.soweto-derby":"1776184268000","promotion.content.soweto_derby":"1776184274000","promotion.content.weekly_stakeback":"1776184279000","promotion.content.champions-league-semi":"1776184285000","promotion.content.new-domain":"1776184296000","promotion.cartola_fc_landing_page":"1776184538000","promotion.content.cashback_copas":"1776184552000","promotion.content.fly_win":"1776184557000","promotion.content.quick_streak":"1776184583000","promotion.content.new_user_casino_blast":"1776184589000","promotion.content.christy":"1776184596000","promotion.content.christy3":"1776184601000","promotion.content.copa_america":"1776184605000","promotion.content.consecutive_bets_bonus":"1776184609000","promotion.content.extra_time_insurance":"1776184613000","promotion.content.brazil_free_bets":"1776184617000","promotion.content.extra_time":"1776184620000","promotion.content.template_ued_04":"1776184625000","promotion.content.carousel-test":"1776184629000","promotion.content.mega_roleta":"1776184633000","promotion.content.bore-draw-test":"1776184638000","promotion.content.casino_cash_mania":"1776184643000","promotion.content.sportysaviour_ued":"1776184647000","promotion.content.spaceman":"1776184651000","promotion.content.august_special":"1776184656000","promotion.content.may_quick_quest_carnival":"1776184661000","promotion.content.instant-virtuals-bet-builder-test":"1776184669000","promotion.content.bore_draw_tc_test":"1776184677000","promotion.content.mighty_sportyhero":"1776184682000","promotion.content.segunda_chance":"1776184688000","promotion.content.hallowins":"1776184692000","promotion.content.tigre_sortudo":"1776184697000","home_page_featured_code":"1776184701000","promotion.content.testlandingpage":"1776184705000","promotion.content.default-template":"1776184713000","promotion.content.adrenalinerush":"1776184721000","promotion.content.brasil_bet_bonus":"1776184725000","promotion.content.pingpongsmash":"1776184731000","promotion.content.br_women_worldcup":"1776184735000","promotion.content.template_ued_live_odds_boost":"1776184742000","promotion.content.template_ued_03":"1776184749000","promotion.content.quick.streak":"1776184763000","promotion.content.quick_streak_challenge":"1776184768000","promotion.security":"1776184784000","promotion.content.test":"1776184788000","promotion.content.free_bets":"1776184809000","promotion.content.casino_cashback":"1776184815000","promotion.content.extratimepromoapp":"1776184820000","promotion.content.freespins_bonanza":"1776184829000","promotion.content.instant-virtuals-bet-builder":"1776184838000","promotion-content-giftgrab-test":"1776184843000","promotion.content.skyward.cashback":"1776184849000","promotion.content.new_test":"1776184854000","promotion.content.giftgrab-test":"1776184858000","promotion.content.empatesemgols":"1776184863000","promotion.content.2devantagem":"1776184868000","promotion.content.fortune_spins":"1776184872000","promotion.content.slottournament":"1776184877000","promotion.content.match-alerts-test":"1776184885000","promotion.content.ucl_quarter_finals_test":"1776184892000","promotion.content.gotw_pocket_rockets_test":"1776184897000","promotion.content.ucl_quarterfinals":"1776184905000","promotion.content.gotw_pocket_rockets":"1776184910000","promotion.content.take-me-fishin":"1776184915000","promotion.content.freespins-bonanza":"1776184921000","promotion.content.one_leg_out":"1776184929000","promotion.content.one_leg_out-test":"1776185075000","promotion.content.kash_drops_category":"1776807095000","promotion.content.one_leg_save-test":"1776247473000","promotion.content.future_of_fun_test":"1776247477000","promotion.content.sportyhero_chuva":"1776247482000","promotion.content.missions_for_all":"1776247486000","promotion.content.load-code-web":"1776247490000","promotion.content.manchester_derby_special_test1":"1776247495000","promotion.content.sportyhero_superquarta":"1776247500000","promotion.content.manchester_derby_special":"1776247504000","promotion.content.test_your_metal":"1776247515000","promotion.content.double-the-action":"1776683299000","promotion.content.daily_roulette":"1788554076000","promotion.content.sporty_power_hour":"1782899688000","promotion.content.sportyjet_mania_category":"1780132604000","promotion.content.sporty_power_hour_category":"1782899732000","promotion.content.evo_cash_mania_category":"1776642717000","promotion.content.rain_rewards_category":"1785063519000","promotion.content.aviator_mission_category":"1784640517000","promotion.content.stake-n-spin_bonanza_category":"1785316189000","promotion.content.reto_crash_category":"1780141217000","promotion.content.daily_roulette_category":"1788691822000","promotion.content.aviatorraindrop_category":"1783365365000","promotion.content.sportyhero_rain_mx_category":"1776815701000","promotion.content.roleta-da-sorte_category":"1785316762000","promotion.content.fortunespins_br_category":"1785316655000","promotion.content.autobet":"1788440627000","promotion.content.fortune_spins_br":"1788084967000","promotion.content.chuva_premios":"1780141860000","promotion.content.torneio_pragmatic":"1780141923000","promotion.content.payday_bonus":"1779722998000","promotion.content.relampago_sg_category":"1778070292000","promotion.content.pragmatic_strike_frenzy":"1780995871000","promotion.content.torneio_pragmatic_category":"1780141920000","promotion.content.pragmatic_strike_frenzy_category":"1780997054000","promotion.content.daily_lucky_wheel":"1782145562000","promotion.content.daily_lucky_wheel_category":"1781404264000","promotion.content.dlw_category":"1779114851000","promotion.content.world-cup-flow":"1780319561000","promotion.content.cashback_na_ucl":"1780111516000","promotion.content.jetx_cashback":"1787866712000","promotion.content.jetx_cashback_category":"1787866715000","promotion.content.skyward_deluxejune":"1780639357000","promotion.content.playson_spins_new":"1784542736000","promotion.content.freebet_rains":"1788678411000","promotion.content.goal_mission_mania":"1782623846000","promotion.content.crazy_cashback_new":"1787866260000","promotion.content.aviator_missions_new":"1788678139000","promotion.content.evo_free_spins_mania":"1784722748000","promotion.content.pragmatic_tournmament_new":"1781089651000","promotion.content.brazil_match_day_mania":"1783083516000","promotion.content.cashback_casino_futbolero":"1781169101000","promotion.content.cashback_da_copa":"1781186175000","promotion.content.torneio_pragmatic_br":"1781193133000","promotion.content.pragmatic_tournmament_za":"1781107843000","promotion.content.pragmatic_freespins_mania_za":"1782975678000","promotion.content.fiesta_de_casino":"1783513651000","promotion.content.giros_tricolores":"1783102797000","promotion.content.road_to_glory":"1781699560000","promotion.sporty_predict_and_win":"1784292120000","promotion.content.goal_mission_mania_category":"1781693452000","promotion.content.cashback_casino_futbolero_category":"1781670991000","promotion.content.fiesta_de_casino_category":"1783180483000","promotion.content.giros_tricolores_category":"1782731844000","promotion.content.torneio_pragmatic_br_category":"1781671555000","promotion.content.torneio_aviator_category":"1781671534000","promotion.content.cashback_da_copa_category":"1781671506000","promotion.content.brazil_match_day_mania_category":"1783083579000","promotion.content.pragmatic_freespins_mania_za_category":"1782975668000","promotion.content.pragmatic_tournmament_za_category":"1782122392000","promotion.content.evo_free_spins_mania_category":"1784722743000","promotion.content.aviator_missions_new_category":"1788678142000","promotion.content.ganhe_no_fortune_tiger":"1782829482000","promotion.content.ganhe_sporty_jet":"1784245326000","promotion.content.furyof_anubis":"1782834857000","promotion.content.world_cup_match_day_bonus":"1783083319000","promotion.content.wc_final_cashback":"1783969417000","promotion.content.pragmatic_play_missions_new":"1788678647000","promotion.content.crazy_cashback_new_category":"1787866264000","promotion.content.freebet_rains_category":"1788678415000","promotion.content.pragmatic_play_missions_new_category":"1788678642000","promotion.content.playson_spins_category":"1784639772000","promotion.content.pragamtic_missao_giros":"1784839543000","promotion.content.aviator_missions_category":"1789208620000","promotion.content.jetx-br":"1787857814000","promotion.content.cashback_promo_lmx_leaguescup":"1786121448000","promotion.content.rain_reward":"1785863683000","promotion.content.rain_reward_category":"1785787620000","promotion.content.sporty_hero_tournament":"1788353928000","promotion.content.seriea_italia_lw":"1788959787000","promotion.content.laliga_champions":"1789566635000","promotion.content.crash_mania":"1787221320000","promotion.content.laliga-champions":"1787323089000","promotion.content.laliga_mania":"1788142536000","promotion.content.daily_rain":"1788875299000","promotion.content.crazy_cashback_mz":"1787752254000","promotion.content.tada_cozy_winter":"1788674161000","promotion.content.giros_mx":"1788691741000","promotion.content.tada_cozy_winter_category":"1787938701000","promotion.content.sporty_hero_tournament_category":"1788041487000","promotion.content.crash_mania_category":"1788041577000","promotion.content.laliga_mania_cat":"1788343798000","promotion.content.fortune_spins_br_category":"1788084964000","promotion.content.sun_sea_and_tada":"1788337483000","promotion.content.skyward_deluxe_tournament":"1788440049000","promotion.content.spin_fever":"1788265645000","promotion.content.spin_fever_br":"1788874805000","promotion.content.skyward_deluxe_tournament_category":"1788440115000","promotion.content.spin_fever_br_category":"1788487347000","promotion.content.big_bass_challenge_pragmatic":"1788945732000","promotion.content.big_bass_challenge_pragmatic_category":"1788945696000","promotion.content.android_app_promo":"1790172788000","promotion.content.weekly_crash_challenge":"1789811522000","promotion.content.dj_khaled_game_sportybet":"1789283647000","promotion.content.sweet_rewards_pragmatic":"1789468634000","promotion.content.sweet_rewards_pragmatic_category":"1789480499000","promotion.content.weekly_crash_challenge_cat":"1789555732000","promotion.content.halloween_tada":"1789575153000","promotion.content.weekly_crash_challenge_android":"1789811517000","promotion.content.gates_of_olympus_2500":"1790154987000","promotion.content.playson_turbo_race":"1790070094000","promotion.content.dice_dual_betgames":"1790061581000","promotion.content.skywards_storm_betgames":"1790061660000","promotion.content.skyward_deluxe_betgames":"1790061696000","promotion.content.gates_of_glory_pragmatic":"1790152818000","promotion.content.evo_reels_showdown":"1790256790000","promotion.content.internationalchallenge":"1790253103000","promotion.content.gates_of_glory_pragmatic_cat":"1790152815000","promotion.content.playson_turbo_race_cat":"1790156763000","sportybet_bo_assets":"1786590722000","sc_assets":"1753443204000","sportybet_cdn_assest_bucket":"1790198097000","card_deposit_card_imgs":"1775627593000","sportypay_cdn_assest_bucket":"1775191470000","loyalty_football_game_img":"1781207454000","sporty_loyalty_imgs":"1790135505000","page_loyalty_images_ios":"1784449575000","sg_game_common":"1781676003000","sg_lobby":"1786351813000","sg_lucky_goal":"1780068378000","sg_spin_da_bottle":"1790182559000","sg_spin2win":"1780065061000","sg_sporty_6":"1780064435000","sg_stud_poker":"1781722871000","sg_common":"1789482796000","sg_common_dialog_message":"1789482910000","sg_chat":"1783588477000","sg_ham_menu":"1782816335000","sg_fbg_dialog":"1781707109000","sg_bethistory":"1779983921000","sg_sicbo":"1780065646000","sg_keno":"1780069368000","sg_flip_da_coin":"1782468962000","sg_even_odd":"1783425102000","sg_red_black":"1783424535000","sg_hi_lo":"1780069150000","sg_blackjack":"1782715692000","sg_input_dialog":"1780069288000","sg_sporty_hero":"1789482611000","sg_rush":"1783426664000","sg_relax_games":"1780066222000","sg_spin_match":"1787676779000","sg_lobby_banner":"1780068731000","sg_turbo_games":"1785836318000","sg_ping_pong":"1789502246000","sg_pragmatic_play_games":"1780067046000","sg_hub88_games":"1780069228000","sg_campaign":"1789554794000","sg_fruit_hunt":"1782791486000","sg_roulette":"1769744452000","sg_spin_da_bottle_special_theme":"1780065334000","sg_the_special_one":"1787652911000","sg_lobby_sections":"1787159961000","sg_sporty_jet":"1789481310000","sg_sporty_hero_instant":"1780059314000","sg_mayan_ancient_riches":"1780068139000","sg_tournament":"1786972235000","sg_sporty_woman":"1781722908000","sg_beats_and_heats":"1779983554000","sg_onboarding":"1783676148000","sg_rugby_blitz":"1788867083000","sg_laliga_rush":"1772697361000","sg_jackpot":"1786626002000","sg_hub88_gaming":"1783581833000","sg_hub_tech_games":"1783581863000","sg_hub_tech_gaming":"1783581880000","sg_light_and_wonder_games":"1783581927000","sg_relax_gaming":"1783581967000","sg_softswiss_games":"1783582002000","sg_split_the_pot_gaming":"1783582024000","sg_ligas_gaming":"1783582683000","sg_kiron_games":"1783583464000","sg_evolution_games":"1784004535000","pc_dob_verification":"1753202263000","json-ld-structured-data":"1781191078000","app_download":"1790089078000"}
+var languages = [{"id":1,"code":"en","name":"English"}]
+var quickbetWidgetUrl = ''
+var quickbetEnabled = false
+var wapNewBadgeEventDetails = {"pcbb":true, "notes_on_bet":true, "sporty_joker": true, "pre_match_detail_code_list": true}
+var betBuilderEnabled = true
+var betBuilderMaxOdds = '1000'
+var betBuilderMaxSelectionsLimit = '8'
+var betBuilderSupportedBetTypes = ["1","2","3"]
+var wapNewBadgeEventDetails = {"pcbb":true, "notes_on_bet":true, "sporty_joker": true, "pre_match_detail_code_list": true}
+var betBuilderExclusionFilter = {"filters":[{"ids":["sr:tournament:2436","sr:tournament:33656","sr:tournament:1191","sr:tournament:2112","sr:tournament:46742"],"sport":"sr:sport:1","type":"tournament"}]}
+var featuredBetBuilderEvents = ["sr:match:70344968","sr:match:72738220","sr:match:72523938","sr:match:73204608","sr:match:68321000","sr:match:66299580","sr:match:72474978","sr:match:72661240","sr:match:70228520","sr:match:72573032","sr:match:72522074","sr:match:72523948","sr:match:72517904","sr:match:73346512","sr:match:72523940","sr:match:74297864","sr:match:72044680","sr:match:67172976","sr:match:72522086","sr:match:72636228","sr:match:72661242","sr:match:72758152","sr:match:58208455","sr:match:72415008","sr:match:68686124","sr:match:74557122","sr:match:74372498","sr:match:67118704","sr:match:67117986","sr:match:72548716","sr:match:72514748","sr:match:73346026","sr:match:68378060","sr:match:72044688","sr:match:72517274","sr:match:68320380","sr:match:73038576","sr:match:73600382","sr:match:67123562","sr:match:73293948","sr:match:111111114499442","sr:match:72335152","sr:match:68931814","sr:match:68321002","sr:match:72548050","sr:match:68932412","sr:match:111111114485858","sr:match:68932782","sr:match:73111582","sr:match:74372490","sr:match:74894930","sr:match:72500746","sr:match:67123568","sr:match:73585656","sr:match:73435046","sr:match:70250946","sr:match:68931516","sr:match:72491352","sr:match:67919946","sr:match:69920858","sr:match:72560280","sr:match:74155762","sr:match:74973770","sr:match:73220882","sr:match:74861506","sr:match:58208809","sr:match:74961498","sr:match:72477428","sr:match:72636234","sr:match:75013506","sr:match:68932754","sr:match:72514746","sr:match:73235776","sr:match:72342060","sr:match:72335150","sr:match:72578228","sr:match:72044676","sr:match:73220868","sr:match:73068062","sr:match:74458710","sr:match:72523942","sr:match:74949340","sr:match:72759300","sr:match:67119784","sr:match:72466544","sr:match:73293212","sr:match:74952888","sr:match:68932264","sr:match:68320378","sr:match:66854928","sr:match:72346900","sr:match:74967986","sr:match:72578224","sr:match:72546072","sr:match:68932808","sr:match:74346932","sr:match:73038572","sr:match:72302960","sr:match:72522088","sr:match:67912338","sr:match:72759316","sr:match:111111114435777","sr:match:68311858","sr:match:73293936","sr:match:72837190","sr:match:67604992","sr:match:74799980","sr:match:66299604","sr:match:74745286","sr:match:72738240","sr:match:72522080","sr:match:74838724","sr:match:72477430","sr:match:72491350","sr:match:72738222","sr:match:74305120","sr:match:74244354","sr:match:73294690","sr:match:66854930","sr:match:67117982","sr:match:67912330","sr:match:68377974","sr:match:72500738","sr:match:73078722","sr:match:74172430","sr:match:73293210","sr:match:73204610","sr:match:74172422","sr:match:74297872","sr:match:72546076","sr:match:111111114499443","sr:match:68311868","sr:match:74321598","sr:match:66299598","sr:match:74305122","sr:match:68311870","sr:match:73185364","sr:match:74322894","sr:match:68823324","sr:match:67912328","sr:match:72548724","sr:match:68932502","sr:match:72523936","sr:match:74172418","sr:match:73293944","sr:match:72477446","sr:match:66854932","sr:match:72341204","sr:match:73294684","sr:match:72965206","sr:match:72517908","sr:match:74372474","sr:match:68823320","sr:match:58209133","sr:match:75021498","sr:match:72342068","sr:match:72515992","sr:match:74297850","sr:match:67125986","sr:match:72499058","sr:match:68932616","sr:match:74949342","sr:match:68932612","sr:match:72466536","sr:match:73685470","sr:match:72474982","sr:match:72202668","sr:match:72759302","sr:match:66854926","sr:match:72837196","sr:match:67912336","sr:match:72474976","sr:match:74702154","sr:match:73293952","sr:match:58208621","sr:match:68932356","sr:match:72346892","sr:match:72676046","sr:match:72679180","sr:match:111111113733047","sr:match:73262952","sr:match:72522078","sr:match:73840374","sr:match:72809256","sr:match:72500744","sr:match:74372536","sr:match:72302956","sr:match:72491358","sr:match:72305208","sr:match:73685536","sr:match:67119774","sr:match:73220768","sr:match:72044686","sr:match:72674312","sr:match:74372522","sr:match:72499052","sr:match:68311148","sr:match:68311158","sr:match:73346032","sr:match:72151178","sr:match:72477436","sr:match:68311862","sr:match:72474984","sr:match:74753408","sr:match:58209029","sr:match:67912332","sr:match:72679314","sr:match:72341210","sr:match:72281350","sr:match:72515984","sr:match:73293206","sr:match:74420854","sr:match:74372542","sr:match:68686126","sr:match:72738224","sr:match:74321596","sr:match:72334978","sr:match:74557134","sr:match:72676038","sr:match:72342056","sr:match:70250952","sr:match:74372550","sr:match:73293204","sr:match:72759310","sr:match:68932726","sr:match:72522084","sr:match:58208347","sr:match:74803868","sr:match:68932070","sr:match:68320998","sr:match:72151170","sr:match:66299586","sr:match:66299600","sr:match:74321600","sr:match:72466538","sr:match:72517266","sr:match:68931476","sr:match:74753406","sr:match:67123564","sr:match:67119778","sr:match:74372472","sr:match:72837798","sr:match:68377992","sr:match:73078724","sr:match:67119792","sr:match:74830406","sr:match:73070132","sr:match:74827898","sr:match:66299582","sr:match:72546070","sr:match:74063456","sr:match:68932410","sr:match:73872866","sr:match:70228522","sr:match:72499062","sr:match:72477432","sr:match:74372544","sr:match:74973776","sr:match:72404434","sr:match:72578236","sr:match:73068064","sr:match:74322896","sr:match:72281600","sr:match:72346894","sr:match:74811872","sr:match:72559084","sr:match:72151166","sr:match:74894928","sr:match:67172992","sr:match:72281360","sr:match:68686130","sr:match:68378052","sr:match:72559086","sr:match:72044674","sr:match:72837194","sr:match:72500740","sr:match:72342090","sr:match:72758158","sr:match:72759298","sr:match:74861500","sr:match:72559102","sr:match:74716428","sr:match:74205802","sr:match:72516650","sr:match:73293200","sr:match:67912342","sr:match:72151182","sr:match:67117978","sr:match:73685530","sr:match:74078010","sr:match:72759306","sr:match:68932756","sr:match:74748962","sr:match:72281358","sr:match:72546074","sr:match:70250954","sr:match:72758150","sr:match:73068058","sr:match:72759304","sr:match:72500736","sr:match:72342076","sr:match:73601750","sr:match:68378064","sr:match:72738228","sr:match:72341200","sr:match:72548722","sr:match:68823314","sr:match:68932780","sr:match:72758156","sr:match:68344856","sr:match:72342084","sr:match:111111114435779","sr:match:68321006","sr:match:73369500","sr:match:72346896","sr:match:73491930","sr:match:72474974","sr:match:68932358","sr:match:72477448","sr:match:67125974","sr:match:73585664","sr:match:73550382","sr:match:72202662","sr:match:67119790","sr:match:72342086","sr:match:74078154","sr:match:67123558","sr:match:72514744","sr:match:73346506","sr:match:72573020","sr:match:111111114435780","sr:match:73346504","sr:match:73293198","sr:match:72548408","sr:match:72578240","sr:match:72515982","sr:match:74803866","sr:match:67119782","sr:match:72335148","sr:match:70228524","sr:match:74372538","sr:match:67117984","sr:match:72758148","sr:match:68823306","sr:match:66299590","sr:match:72562638","sr:match:72661674","sr:match:73293196","sr:match:74610574","sr:match:68823312","sr:match:74172424","sr:match:74078082","sr:match:70250956","sr:match:72522082","sr:match:67119788","sr:match:68823310","sr:match:74172416","sr:match:73038570","sr:match:72491356","sr:match:72560286","sr:match:74305118","sr:match:73107778","sr:match:74372480","sr:match:66299606","sr:match:72575792","sr:match:72341212","sr:match:68311860","sr:match:74288564","sr:match:67604996","sr:match:74172420","sr:match:73262954","sr:match:74894932","sr:match:74078080","sr:match:73369812","sr:match:73346510","sr:match:72335154","sr:match:72548404","sr:match:73078720","sr:match:72559098","sr:match:67172988","sr:match:73293942","sr:match:73346036","sr:match:66299596","sr:match:72679174","sr:match:67123556","sr:match:67912340","sr:match:72202666","sr:match:111111114445817","sr:match:68311150","sr:match:72515994","sr:match:74986120","sr:match:72346902","sr:match:68320996","sr:match:74155764","sr:match:74898570","sr:match:67172972","sr:match:68344858","sr:match:68377986","sr:match:72758164","sr:match:73068068","sr:match:68932752","sr:match:74811876","sr:match:72738238","sr:match:72837184","sr:match:73346030","sr:match:74894926","sr:match:68344860","sr:match:72305212","sr:match:68932408","sr:match:68311162","sr:match:72548510","sr:match:74569048","sr:match:72679318","sr:match:72341202","sr:match:72738232","sr:match:72661238","sr:match:73346034","sr:match:73293202","sr:match:74713764","sr:match:73220770","sr:match:72466542","sr:match:73220766","sr:match:72514750","sr:match:72548406","sr:match:74062530","sr:match:74853668","sr:match:74610576","sr:match:68311154","sr:match:72759312","sr:match:72499056","sr:match:67117990","sr:match:74973768","sr:match:72738242","sr:match:73929282","sr:match:72636238","sr:match:72525380","sr:match:73070130","sr:match:68823316","sr:match:68931812","sr:match:73550384","sr:match:72342064","sr:match:73070120","sr:match:72679182","sr:match:72837790","sr:match:111111114435778","sr:match:74973774","sr:match:72491344","sr:match:68823322","sr:match:72679176","sr:match:72546614","sr:match:72548514","sr:match:72573022","sr:match:72573030","sr:match:72044684","sr:match:67125978","sr:match:74973780","sr:match:72341206","sr:match:74830420","sr:match:68823308","sr:match:72466546","sr:match:72499054","sr:match:73070126","sr:match:73078718","sr:match:73601748","sr:match:111111114474407","sr:match:72524232","sr:match:70228526","sr:match:68686128","sr:match:72342080","sr:match:68378056","sr:match:74205806","sr:match:74811874","sr:match:73685476","sr:match:73078716","sr:match:72302958","sr:match:72679178","sr:match:73318696","sr:match:73204604","sr:match:73294698","sr:match:74244356","sr:match:72758160","sr:match:68932750","sr:match:68344854","sr:match:72466540","sr:match:72151184","sr:match:72346888","sr:match:68932406","sr:match:73294682","sr:match:67118692","sr:match:67604990","sr:match:67118690","sr:match:67118696","sr:match:73068070","sr:match:67119776","sr:match:72341190","sr:match:74205800","sr:match:72305218","sr:match:68931470","sr:match:74372496","sr:match:72305220","sr:match:74372556","sr:match:67604994","sr:match:74980056","sr:match:74973778","sr:match:74830418","sr:match:73346502","sr:match:67912334","sr:match:67172984","sr:match:72346336","sr:match:72044678","sr:match:68931472","sr:match:72738230","sr:match:72837788","sr:match:72335158","sr:match:74374490","sr:match:67172982","sr:match:111111114209593","sr:match:72759314","sr:match:73294688","sr:match:68311856","sr:match:72758166","sr:match:72523934","sr:match:74830314","sr:match:72759318","sr:match:72837800","sr:match:74973782","sr:match:72837182","sr:match:72281346","sr:match:72335146","sr:match:72738226","sr:match:74155760","sr:match:72676048","sr:match:67172980","sr:match:72202660","sr:match:72491354","sr:match:72548718","sr:match:72305222","sr:match:67117988","sr:match:72548720","sr:match:74321602","sr:match:72597736","sr:match:72758154","sr:match:72837802","sr:match:72661672","sr:match:67172978","sr:match:74244314","sr:match:66299608","sr:match:67172974","sr:match:72335156","sr:match:72837794","sr:match:70228516","sr:match:72305214","sr:match:73038566","sr:match:72491346","sr:match:74062554","sr:match:73204606","sr:match:68931480","sr:match:73294686","sr:match:73068066","sr:match:74830320","sr:match:72758168","sr:match:72151174","sr:match:72837188","sr:match:72302954","sr:match:73038574","sr:match:72305210","sr:match:73293938","sr:match:74830416","sr:match:68378076","sr:match:68344864","sr:match:72837186","sr:match:67017184","sr:match:67125984","sr:match:73550390","sr:match:68311160","sr:match:66299594","sr:match:72346330","sr:match:72346326","sr:match:66299588","sr:match:66299602","sr:match:72559096","sr:match:72404436","sr:match:74938528","sr:match:74172428","sr:match:68320384","sr:match:72837796","sr:match:74172426","sr:match:72342048","sr:match:68932504","sr:match:72523944","sr:match:72680162","sr:match:66299592","sr:match:72758146","sr:match:72499060","sr:match:72654280","sr:match:72738236","sr:match:67117994","sr:match:72759320","sr:match:67119786","sr:match:68344866","sr:match:68852264","sr:match:68823318","sr:match:72477438","sr:match:72697694","sr:match:72578230","sr:match:72548410","sr:match:73038568","sr:match:74305576","sr:match:72477442","sr:match:72559094","sr:match:58209197","sr:match:72346328","sr:match:74737836","sr:match:72151180","sr:match:72341192","sr:match:72661676","sr:match:72661678","sr:match:70684374","sr:match:72837192","sr:match:72522076","sr:match:72044682","sr:match:72759308","sr:match:111111114435784","sr:match:73068056","sr:match:66299584","sr:match:68931520","sr:match:73346038","sr:match:68377982","sr:match:74868960","sr:match:68378000","sr:match:72546626","sr:match:73294692","sr:match:68311864","sr:match:72151172","sr:match:72654126","sr:match:67119780","sr:match:67604998","sr:match:72664960","sr:match:72559088","sr:match:72575802","sr:match:72661670","sr:match:72466548","sr:match:74952884","sr:match:73491936","sr:match:73293194","sr:match:74557132","sr:match:67117992","sr:match:70250948","sr:match:58208623","sr:match:73075290","sr:match:74745578","sr:match:58209031","sr:match:72597748","sr:match:58208349","sr:match:58208453","sr:match:72342052","sr:match:67172986","sr:match:74949344","sr:match:73294694","sr:match:72559092","sr:match:72466550","sr:match:72477434","sr:match:72305216","sr:match:68931644","sr:match:73293940","sr:match:73346028","sr:match:72548710","sr:match:74999568","sr:match:74101030","sr:match:111111114435781","sr:match:72404430","sr:match:111111114445818","sr:match:73062090","sr:match:73262956","sr:match:74078008","sr:match:72342072","sr:match:68932610","sr:match:72758162","sr:match:73204612","sr:match:67119772","sr:match:67118698","sr:match:74155340","sr:match:72664958","sr:match:68344862","sr:match:73346508","sr:match:72559100","sr:match:72887370","sr:match:68321004","sr:match:72346898","sr:match:68932614","sr:match:73220866","sr:match:74372482","sr:match:69923862","sr:match:73293208","sr:match:67920686","sr:match:68932262","sr:match:72404432","sr:match:74062552","sr:match:74973772","sr:match:68311152","sr:match:72679316","sr:match:72500742","sr:match:67172990","sr:match:67118702","sr:match:72837792","sr:match:73550386","sr:match:58209195","sr:match:72523950","sr:match:74614650","sr:match:72151168","sr:match:72548712","sr:match:72477444","sr:match:74830412","sr:match:68320382","sr:match:68311156","sr:match:66854934","sr:match:68932724","sr:match:73293950","sr:match:72281354","sr:match:74497748","sr:match:74952090","sr:match:72548714","sr:match:74244312","sr:match:68311866","sr:match:73840376","sr:match:73294700","sr:match:73068054","sr:match:74872438","sr:match:72346332","sr:match:72575800","sr:match:74166836","sr:match:72151176","sr:match:74372554","sr:match:73068072","sr:match:72738234","sr:match:72477440","sr:match:70228528","sr:match:74737794","sr:match:111111114485863","sr:match:74672768","sr:match:74999570","sr:match:72837198","sr:match:73293946","sr:match:72346890","sr:match:72071096","sr:match:68931646","sr:match:72281356"];
+var megaBbEnabled = true
+var sportyStoriesEnabled = true
+var wapJokerEnabled = false
+var wapDedicatedTeamPage = {"enabled":true,"android":{"enabled":true,"data":{},"minVersion":"1.71.0","maxVersion":"","excludedVersions":[]},"ios":{"enabled":false,"data":{},"minVersion":"","maxVersion":"","excludedVersions":[]},"wap":{"enabled":true,"data":{}},"web":{"enabled":false,"data":{}}}
+var newSearchScreen = {"enabled":true,"android":{"enabled":false,"data":{"minQueryLength":3,"maxQueryLength":100,"debounceTime":300,"showTooltip":true,"matchesSectionEnabled":true,"teamsSectionEnabled":true,"leaguesSectionEnabled":true,"playersSectionEnabled":true,"gamesSectionEnabled":true,"promotionsSectionEnabled":true},"minVersion":"","maxVersion":"","excludedVersions":[]},"ios":{"enabled":false,"data":{"minQueryLength":3,"maxQueryLength":100,"debounceTime":300,"showTooltip":true,"matchesSectionEnabled":true,"teamsSectionEnabled":false,"leaguesSectionEnabled":true,"playersSectionEnabled":true,"gamesSectionEnabled":true,"promotionsSectionEnabled":false},"minVersion":"","maxVersion":"","excludedVersions":[]},"wap":{"enabled":true,"data":{"minQueryLength":3,"maxQueryLength":100,"debounceTime":300,"showTooltip":true,"matchesSectionEnabled":true,"teamsSectionEnabled":true,"leaguesSectionEnabled":true,"playersSectionEnabled":true,"gamesSectionEnabled":true,"promotionsSectionEnabled":true}},"web":{"enabled":false,"data":{}}}
+var searchMainMarketBySport = false
+var tournamentPage = false
+var worldCupTournamentPageGroups = false
+var worldCupTournamentPageTeams = false
+var deductedBonusRatio = 0.8
+var liveSportList = '[]'
+var quickMarketMenuToggle = true
+var newVersionRegisterPercentage = '0'
+var betslipRefreshMin = '10'
+var registerVcodeIgnoreConfig = {}
+var simpleKycRegisterStatusConfig = 10
+var homeAdCfgMap = {
+sportsBanner: null,
+mainBanner: null,
+secondBanner: null,
+popularList: null,
+mainGiftBox: null,
+eventInner: null,
+alertBanner: null,
+downloadApp: null
+}
+var depositTabOrder = 'onlinedeposit,mobilemoney,paybill,card'
+var withdrawTabOrder = 'mobilemoney,bank'
+var directBankOrder = ''
+var othersTabOrder = ''
+var depositBankTransferSubTabOrder = ''
+var depositAllowDecimal = false
+var withdrawAllowDecimal = false
+var paymentPartialConfig = {
+ngDepositCardRatio: 100,
+ngDepositDirectBankRatio: 100,
+ngDepositOtherBanksRatio: 100,
+ngDepositBankTransferRatio: 100,
+ngDepositSportyBankRatio: 100,
+ngDepositQuicktellerRatio: 100,
+ngDepositOpayRatio: 100,
+ngDepositPalmpayRatio: 100,
+ngDepositOthersRatio: 100,
+ngDepositKudaRatio: 100,
+ngDepositTennRatio: 100,
+ngWithdrawBankRatio: 100,
+ngWithdrawPartnerRatio: 100,
+ngWithdrawTransferToFriendRatio: 100,
+ghDepositCardRatio: 100,
+ghDepositOnlineRatio: 100,
+ghDepositPaybillRatio: 100,
+ghWithdrawOnlineRatio: 100,
+ghWithdrawBankRatio: 100
+}
+var oddsFilterRangePreFixed = [{"min":1,"max":1.2,"displayValue":"<= 1.2"},{"min":1,"max":1.5,"displayValue":"<= 1.5"},{"min":1,"max":2,"displayValue":"<= 2"}]
+var isFeaturedCodeEnabled = true;
+var isEnableCodeHubCodes = true;
+var isEnableCodeHubLoadCode = true;
+var isEnableCreateSocialPage = true
+var verifiedNicknameResponse = null;
+var enableFollowUser = true
+var quickMarketsOrderAbTesting = []
+var marketsTabsOrder = {
+"sr:sport:1":[
+"all",
+"171121135724MGI11262166",
+"171121144758MGI11271357",
+"171121181907MGI11283762",
+"171121154448MGI11275318",
+"221127152718MGI40491792",
+"250128133853MGI02569338",
+"260610101345MGI05278722",
+"171121175348MGI11283628",
+"171124164932MGI11390628",
+"250313133240MGI34333435"
+]
+}
+var isEnableOddsFormat = true;
+var enableCodeHubCustomCodes = true
+var codeHubCustomCodePattern = '^[a-zA-Z0-9]+_[a-zA-Z0-9]*$';
+var codeHubCustomCodeSeparator = '_';
+var enableCreatorCredits = true;
+var socialCreatorCreditsMinimumSelections = '5';
+var enable2faIndicator = true;
+var myPinEnabled = true;
+var myPinMaxCount = '30';
+var myPinTutorialDisplayTimes = '3';
+var myPinTutorialDisplayInterval = '7';
+var enableGhUploadPhoto = true;
+var BO_bore_draw_selection_eligibility = {
+"3": {
+"sr:sport:1": [
+{
+"marketId": 45,
+"excludedOutcomeId": 274
+},
+{
+"marketId": 47,
+"excludedOutcomeId": 426
+}
+]
+}
+};
+var BO_two_up_settlement_enabled = true
+var BO_wap_lfb_boost_enabled = true
+var BO_one_up_settlement_enabled = true
+var BO_games_widget_enabled = true
+var BO_cashout_flexible_bet_allow = true
+var BO_gift_reminder_enabled_add_to_stake = true
+var BO_early_payout_config = {
+"features":{
+"over_under":{
+"name":"over_under",
+"enabled":{
+"preMatch":true,
+"live":false
+},
+"marketMapping":[
+{
+"sourceMarketId":"18",
+"sourceSpecifier":"total=1.5",
+"mappedMarketId":"60180",
+"mappedSpecifier":"minsnr=10|total=1.5"
+},
+{
+"sourceMarketId":"18",
+"sourceSpecifier":"total=2.5",
+"mappedMarketId":"60180",
+"mappedSpecifier":"minsnr=30|total=2.5"
+},
+{
+"sourceMarketId":"18",
+"sourceSpecifier":"total=3.5",
+"mappedMarketId":"60180",
+"mappedSpecifier":"minsnr=50|total=3.5"
+}
+],
+"supportSportIds":[
+"sr:sport:1"
+]
+},
+"double_chance_one_up":{
+"name":"double_chance_one_up",
+"enabled":{
+"preMatch":true,
+"live":false
+},
+"marketMapping":[
+{
+"sourceMarketId":"10",
+"sourceSpecifier":"",
+"mappedMarketId":"60110",
+"mappedSpecifier":""
+}
+],
+"supportSportIds":[
+"sr:sport:1"
+]
+},
+"one_x_two_never_down":{
+"name":"one_x_two_never_down",
+"enabled":{
+"preMatch":true,
+"live":true
+},
+"marketMapping":[
+{
+"sourceMarketId":"1",
+"sourceSpecifier":"",
+"mappedMarketId":"60210",
+"mappedSpecifier":""
+}
+],
+"supportSportIds":[
+"sr:sport:1"
+]
+},
+"one_x_two_one_up":{
+"name":"1UP",
+"enabled":{
+"preMatch":true,
+"live":true
+},
+"marketMapping":[
+{
+"sourceMarketId":"1",
+"sourceSpecifier":"",
+"mappedMarketId":"60200",
+"mappedSpecifier":""
+}
+],
+"supportSportIds":[
+"sr:sport:1"
+]
+},
+"one_x_two_two_up":{
+"name":"2UP",
+"enabled":{
+"preMatch":true,
+"live":true
+},
+"marketMapping":[
+{
+"sourceMarketId":"1",
+"sourceSpecifier":"",
+"mappedMarketId":"60100",
+"mappedSpecifier":""
+}
+],
+"supportSportIds":[
+"sr:sport:1"
+]
+}
+}
+};
+var BO_rum_url_template_config = {
+"countryReg": "(?i)\\b(ke|ng|gh|zm|tz|ug|int|br|za)\\b",
+"pathRegMap": {
+"/finAccs/finAcc/userDetail/([^/]+)": "/finAccs/finAcc/userDetail/*",
+"/wallet/confirmCurrency/([^/]+)": "/wallet/confirmCurrency/*",
+"/patron/socialpage/my/followings/([^/]+)": "/patron/socialpage/my/followings/*",
+"/patron/socialpage/user/([^/]+)": "/patron/socialpage/user/*",
+"/patron/socialpage/user/([^/]+)/follower": "/patron/socialpage/user/*/follower",
+"/patron/socialpage/user/([^/]+)/followings": "/patron/socialpage/user/*/followings",
+"/orders/socialpage/user/([^/]+)/sharecode": "/orders/socialpage/user/*/sharecode",
+"/orders/socialpage/user/([^/]+)/sharecode/([^/]+)": "/orders/socialpage/user/*/sharecode/*",
+"/patron/selfBettingLimit/([^/]+)": "/patron/selfBettingLimit/*",
+"/orders/bookingCode/footballOnly/([^/]+)/liabilities": "/orders/bookingCode/footballOnly/*/liabilities",
+"/orders/share/([^/]+)": "/orders/share/*",
+"/orders/socialpage/my/sharecode/exist/([^/]+)": "/orders/socialpage/my/sharecode/exist/*"
+}
+};
+var BO_rum_config = {
+"isEnabled": true,
+"traceRatio": "0.1",
+"traceSamplingByStatus": {
+"ok": "0.01",
+"error": "1.0",
+"unset": "0.01"
+}
+};
+var BO_betslip_mission_reminder_enabled = true
+var BO_betslip_mission_reminder_user_id_suffix = [0,1,2,3,4,5,6,7,8,9];
+var BO_flexi_weighted_rtp_enabled = true
+var BO_flexi_average_weighted_rtp_multiplier = '1';
+var BO_flexi_average_weighted_rtp_min = '0.8';
+var BO_multi_maker_toggle = true
+var BO_dynamic_replacement_markets = [];
+var BO_wap_odds_boost_enabled = false
+var BO_two_up_market_list = [[1,60100]];
+var BO_one_up_market_list = [[1,60200]];
+var BO_cashout_support_gift_enabled = true
+var BO_user_segmentation_enabled = true
+var userSegmentDefault = 'D1'
+var maxCombinationRejectEnabled = Boolean(true);
+var maxCombinationReject = '40000';
+var postBetUpsellEnabled = true
+var miniGamesOpenBetsEnabled = true
+var wapGamesForYouEnabled = false
+var missionsGamesCrossSellingDialog = {"enabled":true,"android":{"enabled":true,"data":{},"minVersion":"","maxVersion":"","excludedVersions":[]},"ios":{"enabled":true,"data":{},"minVersion":"","maxVersion":"","excludedVersions":[]},"wap":{"enabled":true,"data":{}},"web":{"enabled":false,"data":{}}}
+var autoBetEnabled = true
+var autoBetActive = true
+var autoBetMaxDaysBeforeMatch = '30'
+var autoBetMaxActiveSettingsPerUser = '10'
+var autoBetMinOdds = '1.01'
+var autoBetMaxOdds = '100'
+var multipleBetCashoutSimRebet = {}
+var sportyPicks = {"enabled":true,"android":{"enabled":true,"data":{"pickMarketsPageSize":2,"sportyPicksGroupedMarketIds":["60400","60401","60402","60403","60404","60405","60407","60408","60409","60410","60411","60412","60413"]},"minVersion":"","maxVersion":"","excludedVersions":[]},"ios":{"enabled":true,"data":{"pickMarketsPageSize":2,"sportyPicksGroupedMarketIds":["60400","60401","60402","60403","60404","60405","60407","60408","60409","60410","60411","60412","60413"]},"minVersion":"","maxVersion":"","excludedVersions":[]},"wap":{"enabled":true,"data":{"pickMarketsPageSize":2,"sportyPicksGroupedMarketIds":["60400","60401","60402","60403","60404","60405","60407","60408","60409","60410","60411","60412","60413"]}},"web":{"enabled":false,"data":{}}}
+var numberGameModuleEnable = true
+var numberGameFeatureMatchEnable = true
+var BO_activity_state_config = {
+"featureEnabled": true,
+"activities": [
+{
+"enabled": true,
+"type": 1,
+"name": "BET_ONE_UP",
+"emptyResultCacheTTL": 300,
+"hintTimeLimit": 604800
+}
+]
+}
+var batchWindowMsForConfigQuery = 30
+var cashoutMetricsSamplingUserIdTail = [
+{
+"countryCode": "NG",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "GH",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "UG",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "TZ",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "ZM",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "INT",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "BR",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "ZA",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "CM",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "MZ",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+},
+{
+"countryCode": "KE",
+"includingUserIdTail": [
+0,
+1,
+2,
+3,
+4,
+5,
+6,
+7,
+8,
+9
+]
+}
+]
+var cashoutQuickReinvestEnabled = {
+"betTypeControl": [
+{
+"betType": "multiple",
+"enabled": true
+},
+{
+"betType": "single",
+"enabled": true
+}
+]
+}
+var betslipMissionCacheTime = 60000 </script>
+<script>
+var Aggressive = Boolean(true);
+var Reffer = '';
+var PAGE_KEYS = {};
+</script>
+<script type="text/javascript">
+var appId = 'africa';
+var currency = 'GHS';
+var showCurrency = 'GHS';
+var countryCode = '233';
+</script>
+<link rel="preload" href="/global/main/common/iconfont/iconfont.18cb30b58f.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="manifest" href="/global/main/manifest-gh.json">
+<link rel="stylesheet" href="/global/main/modules/common-wap/core/core.c99b7e3e0c.css">
+<style type="text/css">
+@keyframes logoLoading {
+0%{transform:scale(1) translateZ(0)}
+37.5%{transform:scale(0.8) translateZ(0)}
+62.5%{transform:scale(0.6) translateZ(0)}
+87.5%{transform:scale(0.5) translateZ(0)}
+100%{transform:scale(0.4) translateZ(0)}
+}
+.m-page-loading-wrap{position:fixed;width:100%;height:100%;z-index:999999;color:#000;background:#fff;left:0;color:#9CA0AB;top:0}
+html[theme="dark"] .m-page-loading-wrap{background:#1B1E25;color:#FFFFFF;}
+.m-page-loading-wrap .loading-page-fail{display:none}
+.m-page-loading-wrap .m-page-loading{position:absolute;transform:translate(-50%,-50%);top:50%;left:50%}
+.m-page-loading-wrap .m-page-loading .loading{left:50%;position:absolute;transform:translate(-50%,-50%);font-size:1rem;text-align:center}
+.m-page-loading-wrap .m-page-loading .loading-icon{height:5rem;width:5rem;line-height:5rem;font-size:2.75rem;display:block;border-radius:5rem;color:#fff;background-color:#EAECEF;margin:0 auto 10px auto;padding:1rem;animation:logoLoading 1s infinite cubic-bezier(0.4,0,1,1) alternate}
+html[theme="dark"] .m-page-loading-wrap .m-page-loading .loading-icon{background:#9CA0AB;color:#FFFFFF;}
+.m-page-loading-wrap.m-page-loading-fail .m-page-loading .loading{display:none}
+.m-page-loading-wrap.m-page-loading-fail .m-page-loading .loading-page-fail{display:block;text-align:center;color:#9CA0AB}
+.m-page-loading-wrap.m-page-loading-fail .m-page-loading .loading-page-fail .fail-text{margin-top:.8rem;white-space:nowrap;word-break:keep-all;margin-bottom:3rem}
+.m-page-loading-wrap.m-page-loading-fail .m-page-loading .loading-page-fail .fail-btn{font-size:1.16rem;color:#0D9737;height:3rem;line-height:3rem;padding:0 2.33rem;display:inline-block;border:1px solid #0D9737;border-radius:.25rem}
+</style>
+<div class="fb-login-button" data-width="130" data-max-rows="1" data-size="medium" data-button-type="login_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="false" style="display: none;"></div>
+<div class="m-page-loading-wrap" id="pageLoading">
+<div class="m-page-loading">
+<svg t="1610960923760" class="icon loading-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7232" width="32" height="32"><path d="M579.98461572 403.01346114c-2.7 0-5.38269258 0.06923057-8.08269257 0.13846201v-0.13846202h-78.45576943v-0.13846113c-32.33076943-1.67884628-55.35-28.45384628-51.88846114-61.26923057 3.46153886-32.79807685 32.14038427-59.60769258 64.81730742-61.26923056h79.68461572L540.93846114 75.84615372h-16.54615372v0.08653886a291.56538427 291.56538427 0 0 0-6.92307685-0.08653886C370.18076943 75.84615372 238.19230742 194.81923057 222.71923057 341.58846113c-15.47307685 146.76923057 91.38461572 265.74230742 238.67307685 265.7423083 2.31923057 0 4.62115371-0.06923057 6.92307686-0.13846201l-0.03461485 0.225h79.90961485c32.19230742 1.8 55.07307685 28.50576943 51.62884629 61.2173083-3.46153886 32.79807685-32.12307685 59.59038427-64.8 61.26923056h-79.65l45.10384628 204.4038463h16.54615372v-0.1038463c2.30192315 0.06923057 4.60384629 0.10384628 6.92307685 0.1038463 147.25384628 0 279.17307685-118.93846113 294.64615371-265.67307685 15.47307685-146.7-91.35-265.62115372-238.6038454-265.6211546M757.76923057 297.38461573a117.69230742 117.69230742 0 1 0 0-235.38461573 117.69230742 117.69230742 0 0 0 0 235.38461573M280.07692315 719.69230742a117.69230742 117.69230742 0 1 0 117.69230742 117.69230831A117.69230742 117.69230742 0 0 0 280.07692315 719.69230742" p-id="7233" fill="#ffffff"></path></svg>
+<div class="loading">Loading...</div>
+<div class="loading-page-fail">
+<p class="fail-text">Data Failed loading. Please reload.</p>
+<div class="fail-btn">Reload</div>
+</div>
+</div>
+</div>
+<script>
+window.seoEntity = null;
+</script>
+<script>
+window.assetsRetry = function() {};
+</script>
+</head>
+<body
+id="notInWebView"
+spellcheck="false"
+data-os="ios"
+data-ua="mozilla/5.0 (iphone; cpu iphone os 18_5 like mac os x) applewebkit/605.1.15 (khtml, like gecko) version/18.5 mobile/15e148 safari/604.1 ">
+<script>
+(function() {
+var ua = navigator.userAgent;
+function ver(pattern) {
+var m = ua.match(pattern);
+return m ? parseFloat(m[1]) : 0;
+}
+function isDeprecated() {
+if (/MSIE\s|Trident\//.test(ua)) return true;
+if (/Opera Mini\//.test(ua)) return true;
+if (/UCBrowser|BlackBerry|BB10|KaiOS/.test(ua)) return true;
+if (/Android/.test(ua) && /Version\/\d/.test(ua) && !/Chrome/.test(ua)) return true;
+var ios = 0;
+if (/iPhone|iPad|iPod/.test(ua)) {
+ios = ver(/OS (\d+)[_.\s]/);
+if (ios && ios < 12) return true;
+}
+var samsung = ver(/SamsungBrowser\/([\d.]+)/);
+if (samsung && samsung < 9) return true;
+var opera = ver(/OPR\/([\d.]+)/);
+if (opera) return opera < 51;
+var edgeLegacy = ver(/Edge\/([\d.]+)/);
+if (edgeLegacy) return edgeLegacy < 80;
+var firefox = ver(/Firefox\/([\d.]+)/);
+if (firefox) return firefox < 78;
+var chrome = ver(/Chrome\/([\d.]+)/);
+if (chrome) return chrome < 69;
+var safari = ver(/Version\/([\d.]+).*Safari/);
+if (safari) return safari < 12;
+if (typeof Proxy === 'undefined') return true;
+return false;
+}
+if (!isDeprecated()) return;
+var css = '#browserDeprecationOverlay {'
++ 'position:fixed;top:0;left:0;width:100%;height:100%;'
++ 'z-index:999999;overflow-y:auto;'
++ '}'
++ '#browserDeprecationOverlay .browser-deprecation-page {'
++ 'width:100%;min-height:100%;background-color:#fff;'
++ 'color:#9ca0ab;font-family:Inter-Medium,Arial,sans-serif;'
++ '}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head {'
++ 'padding:75px 40px 0;max-width:1163px;margin:0 auto;'
++ 'font-size:0;display:flex;align-items:center;justify-content:space-between;'
++ '}'
++ '@media screen and (max-width:767px){'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head {'
++ 'flex-direction:column-reverse;align-items:center;padding:30px 0 0;'
++ '}}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head .img-container {'
++ 'vertical-align:middle;display:inline-block;'
++ '}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head .img-container img {'
++ 'width:100%;height:auto;'
++ '}'
++ '@media screen and (max-width:767px){'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head .img-container {'
++ 'max-width:100%;margin-bottom:20px;'
++ '}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head .img-container img {'
++ 'width:190px;'
++ '}}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head .error-title-container .error-title-1 {'
++ 'font-size:76px;line-height:normal;color:#9ca0ab;'
++ '}'
++ '@media screen and (max-width:767px){'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head .error-title-container {'
++ 'width:100%;text-align:center;'
++ '}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-head .error-title-container .error-title-1 {'
++ 'font-size:40px;font-weight:bold;line-height:1.2;padding:0 10%;margin-bottom:20px;'
++ '}}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-body {'
++ 'margin:0 auto;padding:0 40px;max-width:1163px;'
++ '}'
++ '@media screen and (max-width:767px){'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-body {'
++ 'padding:0 40px;'
++ '}}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-body .error-message-title {'
++ 'display:none;'
++ '}'
++ '@media screen and (max-width:767px){'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-body .error-message-title {'
++ 'display:block;font-weight:bold;text-align:left;font-family:Inter-SemiBold;'
++ 'font-size:26px;color:#9ca0ab;margin-bottom:8px;'
++ '}}'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-body .error-message {'
++ 'margin-top:17px;font-size:20px;line-height:1.8;text-align:left;'
++ 'font-family:Roboto,Inter-Regular,Arial,sans-serif;color:#353a45;'
++ '}'
++ '@media screen and (max-width:767px){'
++ '#browserDeprecationOverlay .browser-deprecation-page .page-body .error-message {'
++ 'color:#9ca0ab;font-size:16px;line-height:1.375;margin:0;'
++ '}}';
+var style = document.createElement('style');
+style.type = 'text/css';
+style.textContent = css;
+document.getElementsByTagName('head')[0].appendChild(style);
+var html = '<div class="browser-deprecation-page">'
++ '<div class="page-head">'
++ '<div class="error-title-container">'
++ '<div class="error-title-1">BROWSER NOT SUPPORTED</div>'
++ '</div>'
++ '<div class="img-container">'
++ '<img src="/global/main/brand/sportybet/static/img/goalkeeper.jpg" alt="" onerror="this.style.display=\'none\'" />'
++ '</div>'
++ '</div>'
++ '<div class="page-body">'
++ '<div class="error-message-title">OOPS...</div>'
++ '<div class="error-message">'
++ '<span class="error-message-content">Your browser is out of play! The version you are using is no longer supported by SportyBet. To keep winning and enjoying the ultimate live sports experience, please upgrade or switch to Chrome or Safari.</span>'
++ '</div>'
++ '</div>'
++ '</div>';
+var overlay = document.createElement('div');
+overlay.id = 'browserDeprecationOverlay';
+overlay.innerHTML = html;
+document.body.appendChild(overlay);
+try {
+var pathname = window.location.pathname || '';
+var country = pathname.split('/')[1] || 'int';
+if (country === 'modules') country = 'int';
+var locale = (function() {
+if (pathname.indexOf('/br/') !== -1) return 'pt-br';
+var cookies = document.cookie.split('; ');
+for (var i = 0; i < cookies.length; i++) {
+var parts = cookies[i].split('=');
+if (parts[0] === 'locale') return parts[1];
+}
+return null;
+})();
+var url = 'https://' + window.location.host + '/' + country + '/m/cms/pages/export/page_errors';
+if (locale && locale !== 'default') url += '?locale=' + locale;
+var xhr = new XMLHttpRequest();
+xhr.open('GET', url, true);
+xhr.onreadystatechange = function() {
+if (xhr.readyState !== 4 || xhr.status !== 200) return;
+try {
+var data = JSON.parse(xhr.responseText);
+var keys = data && data.keys;
+if (!keys) return;
+if (keys['browser_not_supported_title'] && keys['browser_not_supported_title'].value) {
+document.querySelector('#browserDeprecationOverlay .error-title-1').textContent = keys['browser_not_supported_title'].value;
+}
+if (keys['browser_not_supported_subtitle'] && keys['browser_not_supported_subtitle'].value) {
+document.querySelector('#browserDeprecationOverlay .error-message-title').textContent = keys['browser_not_supported_subtitle'].value;
+}
+if (keys['browser_not_supported_message'] && keys['browser_not_supported_message'].value) {
+document.querySelector('#browserDeprecationOverlay .error-message-content').textContent = keys['browser_not_supported_message'].value;
+}
+} catch (e) {}
+};
+xhr.send();
+} catch (e) {}
+})();
+</script>
+<noscript>
+<div id="noScript">
+<h2>Please turn JavaScript on in browser</h2>. Don't know how? <a href="https://www.google.com.hk/search?q=enable+javascript+chrome+&oq=enable+javascript+chrome+"></a>
+</div>
+</noscript>
+<!-- Google Tag Manager (noscript) -->
+
+<!-- End Google Tag Manager (noscript) -->
+<div class="page-content page-content--gh">
+<div id="app"></div>
+<script src="/global/main/modules/common-instaWin-wap/lib/index.f7e9f8854e.js" defer></script>
+<script src="/global/main/modules/common-instaWin-wap/appCore/index.194416a4fc.js" defer></script>
+<script src="/global/main/modules/common-instaWin-wap/base/base.c9c64bd6ed.js" defer></script>
+<script src="/global/main/modules/common-instaWin-wap/core/core.7bf34e520f.js" defer></script>
+<script src="/global/main/vendors~modules/instaWin/legends/index~modules/instaWin/mobile/index~modules/instaWin/penalty/index~~b02d3760.6ca8dc2745.js" defer></script>
+<script src="/global/main/vendors~modules/instaWin/legends/index~modules/instaWin/mobile/index~modules/instaWin/penalty/index~~fb5db255.9a01947602.js" defer></script>
+<script src="/global/main/modules/instaWin/mobile/index.b2b9066be6.js" defer></script>
+</div>
+<div id="touchStrikeLayout" style="position: fixed;left:0;top:0;width:100%;height:100%;z-index:99999;background:#fff;opacity:0;"></div>
+<script src="/common/ghs-money.js"></script>
+<script>
+window.setTimeout(function(){var l=document.getElementById("touchStrikeLayout");l&&l.parentNode.removeChild(l)},500);
+</script>
+<script>
+// SportyBet Instant Virtuals Next Round & Reshuffle Interceptor
+(function() {
+  var isNextRoundAction = false;
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest && e.target.closest('[data-op*="next-round"], [class*="next-round"], [class*="nextRound"]');
+    var isNext = false;
+    if (btn) {
+      var op = (btn.getAttribute('data-op') || '').toLowerCase();
+      var cls = (btn.className || '').toString().toLowerCase();
+      var txt = (btn.innerText || btn.textContent || '').trim().toLowerCase();
+      if (op.indexOf('next-round') !== -1 || cls.indexOf('next-round') !== -1 || cls.indexOf('nextround') !== -1 || txt === 'next round') {
+        isNext = true;
+      }
+    }
+    if (isNext) {
+      console.log('[IV CLIENT] Next round button clicked! Reshuffling games...');
+      isNextRoundAction = true;
+      setTimeout(function() { isNextRoundAction = false; }, 2500);
+    }
+  }, true);
+
+  function formatGhsAmount(amount) {
+    return window.GhsMoney ? window.GhsMoney.format(amount) : Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  window.formatGhsAmount = formatGhsAmount;
+
+  function formatGhsAmountParts(amount) {
+    if (window.GhsMoney) return window.GhsMoney.formatParts(amount);
+    var num = Number(amount || 0);
+    var str = num.toFixed(2);
+    var parts = str.split('.');
+    var intFormatted = Number(parts[0]).toLocaleString('en-US');
+    var pesewaStr = '.' + (parts[1] || '00');
+    return { intPart: intFormatted, pesewaPart: pesewaStr, full: intFormatted + pesewaStr };
+  }
+  window.formatGhsAmountParts = formatGhsAmountParts;
+
+  function refreshWalletUI(forcedGhs) {
+    try {
+      fetch('/pocket/v1/wallet/assetsInfo?_t=' + Date.now())
+        .then(function(r) { return r.json(); })
+        .then(function(json) {
+          if (!json || json.bizCode !== 10000 || !json.data) return;
+          var ghs = window.GhsMoney
+            ? window.GhsMoney.fromWalletPayload(json.data, forcedGhs)
+            : Number((forcedGhs !== undefined) ? forcedGhs : (json.data.balanceGhs != null ? json.data.balanceGhs : 0));
+          if (ghs !== undefined && ghs !== null && !isNaN(ghs)) {
+            window.__userWalletBalance = ghs;
+            try {
+              localStorage.setItem('sporty_wallet_balance', String(ghs));
+              window.dispatchEvent(new CustomEvent('sporty-balance-updated', { detail: { balance: ghs } }));
+            } catch (_) {}
+
+            var parts = formatGhsAmountParts(ghs);
+            var formatted = parts.full;
+            var intPart = parts.intPart;
+            var pesewaPart = parts.pesewaPart;
+            var pesewaDigits = pesewaPart.substring(1);
+
+            // Do not patch win/payout UI. WinningPop uses class "money" for potWin
+            // (YOU WON amount); overwriting it with wallet balance is the bug.
+            function isPayoutOrWinDisplay(el) {
+              return !!(el.closest && el.closest(
+                '#winngin-pop, [data-op="virtual_common_winning_pop"], .main__return, .winning-amount, .winning-section-wrapper, .total-win, .total-return, .total-return-amount, .claim-wrapper'
+              ));
+            }
+
+            var selectors = [
+              '.m-balance',
+              '.m-balance-wrapper',
+              '.m-nav__balance',
+              '.m-header-balance',
+              '.m-wallet-balance',
+              '.m-cur-balance',
+              '.balance',
+              '.balance-value',
+              '[class*="balance-val"]',
+              '[class*="balance_val"]',
+              '[class*="balanceValue"]',
+              '[data-op*="balance"]',
+              '.nav-balance',
+              '.user-balance',
+              '.m-user-balance'
+            ];
+
+            selectors.forEach(function(sel) {
+              document.querySelectorAll(sel).forEach(function(el) {
+                if (!el || isPayoutOrWinDisplay(el)) return;
+
+                var intEl = el.querySelector('[class*="integer"], [class*="int-part"], [class*="whole"]');
+                var decEl = el.querySelector('[class*="decimal"], [class*="dec-part"], [class*="fraction"], small');
+                if (intEl && decEl) {
+                  intEl.textContent = intPart;
+                  decEl.textContent = decEl.textContent.trim().startsWith('.') ? pesewaPart : pesewaDigits;
+                  return;
+                }
+
+                var valEl = el.querySelector('.value, .balance-value, .money, .m-balance-value');
+                if (valEl && !valEl.children.length && !isPayoutOrWinDisplay(valEl)) {
+                  valEl.textContent = formatted;
+                  return;
+                }
+
+                if (!el.children.length) {
+                  el.textContent = formatted;
+                  return;
+                }
+
+                var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                var node;
+                var textNodes = [];
+                while ((node = walker.nextNode())) {
+                  if (node.nodeValue && node.nodeValue.trim()) {
+                    textNodes.push(node);
+                  }
+                }
+                
+                if (textNodes.length === 1) {
+                  var text = textNodes[0].nodeValue;
+                  if (text.match(/[0-9,]+\.[0-9]{2}/)) {
+                    textNodes[0].nodeValue = text.replace(/[0-9,]+\.[0-9]{2}/, formatted);
+                  } else if (text.match(/[0-9,]+/)) {
+                    textNodes[0].nodeValue = text.replace(/[0-9,]+/, formatted);
+                  }
+                } else {
+                  var fullNumNode = textNodes.find(function(n) { return /[0-9,]+\.[0-9]{2}/.test(n.nodeValue); });
+                  if (fullNumNode) {
+                    fullNumNode.nodeValue = fullNumNode.nodeValue.replace(/[0-9,]+\.[0-9]{2}/, formatted);
+                  }
+                }
+              });
+            });
+          }
+        })
+        .catch(function() {});
+    } catch (_) {}
+  }
+  window.__refreshWalletUI = refreshWalletUI;
+  refreshWalletUI();
+  setTimeout(refreshWalletUI, 400);
+  setInterval(refreshWalletUI, 8000);
+  window.addEventListener('sporty-balance-updated', function(e) {
+    if (e.detail && e.detail.balance !== undefined) {
+      refreshWalletUI(e.detail.balance);
+    }
+  });
+
+  // Connect to SSE for instant live balance updates from database
+  try {
+    if (window.EventSource) {
+      var sse = new EventSource('/api/transactions/stream');
+      sse.onmessage = function(ev) {
+        try {
+          var payload = JSON.parse(ev.data);
+          if (payload && (payload.type === 'balance' || payload.type === 'transaction')) {
+            refreshWalletUI(payload.balance);
+          }
+        } catch (_) {}
+      };
+    }
+  } catch (_) {}
+
+  // Intercept XMLHttpRequest
+  var rawXhrOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+    var finalUrl = url;
+    if (typeof finalUrl === 'string' && (finalUrl.indexOf('/iwqk/event/prepare_round') !== -1 || finalUrl.indexOf('/iwqk/event/list_all_with_popular_markets') !== -1)) {
+      if (isNextRoundAction || finalUrl.indexOf('forceNew') !== -1) {
+        var sep = finalUrl.indexOf('?') === -1 ? '?' : '&';
+        if (finalUrl.indexOf('forceNew') === -1) {
+          finalUrl += sep + 'forceNew=true';
+        }
+      }
+    }
+    this._url = finalUrl;
+    return rawXhrOpen.call(this, method, finalUrl, async !== false, user, password);
+  };
+
+  var rawXhrSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function() {
+    var self = this;
+    if (isNextRoundAction || (this._url && this._url.indexOf('forceNew') !== -1)) {
+      try { this.setRequestHeader('x-force-new', 'true'); } catch (_) {}
+    }
+    if (this._url && (this._url.indexOf('/ticket/create') !== -1 || this._url.indexOf('/round/settle') !== -1)) {
+      this.addEventListener('load', function() {
+        setTimeout(refreshWalletUI, 300);
+        setTimeout(refreshWalletUI, 1200);
+      });
+    }
+    return rawXhrSend.apply(this, arguments);
+  };
+
+  // Intercept fetch
+  if (window.fetch) {
+    var rawFetch = window.fetch;
+    window.fetch = function(input, init) {
+      var url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+      if (url.indexOf('/iwqk/event/prepare_round') !== -1 || url.indexOf('/iwqk/event/list_all_with_popular_markets') !== -1) {
+        if (isNextRoundAction || url.indexOf('forceNew') !== -1) {
+          init = init || {};
+          init.headers = init.headers || {};
+          if (init.headers instanceof Headers) {
+            init.headers.set('x-force-new', 'true');
+          } else {
+            init.headers['x-force-new'] = 'true';
+          }
+          var sep = url.indexOf('?') === -1 ? '?' : '&';
+          if (url.indexOf('forceNew') === -1) {
+            url += sep + 'forceNew=true';
+          }
+          if (typeof input === 'string') input = url;
+          else if (input && input.url) input = new Request(url, input);
+        }
+      }
+      var p = rawFetch.call(this, input, init);
+      if (url && (url.indexOf('/ticket/create') !== -1 || url.indexOf('/round/settle') !== -1)) {
+        p.then(function() {
+          setTimeout(refreshWalletUI, 300);
+          setTimeout(refreshWalletUI, 1200);
+        }).catch(function() {});
+      }
+      if (url && url.indexOf('/ticket/detail') !== -1) {
+        return p.then(function(res) {
+          try {
+            var clone = res.clone();
+            clone.json().then(function(data) {
+              if (data && (data.win === true || data.isWin === true || data.status === 1 || (data.totalReturn && data.totalReturn > 0))) {
+                if (Array.isArray(data.outcomes)) {
+                  data.outcomes.forEach(function(o) { o.hit = true; o.win = true; });
+                }
+                if (Array.isArray(data.bets)) {
+                  data.bets.forEach(function(b) {
+                    b.hit = true; b.status = 1;
+                    if (Array.isArray(b.betDetails)) {
+                      b.betDetails.forEach(function(d) { d.hit = true; d.status = 1; d.settleType = 1; });
+                    }
+                  });
+                }
+              }
+            }).catch(function() {});
+          } catch (_) {}
+          return res;
+        });
+      }
+      return p;
+    };
+  }
+  // Maximum potential winning display cap (GHS 1,200,000.00)
+  var MAX_WIN_CAP_GHS = 1200000.00;
+  if (window.sportsCfg) {
+    window.sportsCfg.potWinMax = '1200000.00';
+  }
+  if (window.bonusCfg) {
+    window.bonusCfg.max = '1200000.00';
+  }
+})();
+</script>
+<!-- Supabase-Backed Auth System & Login Modal Overlay -->
+<style>
+#sb-auth-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+#sb-auth-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.sb-auth-card {
+  background: #181b20;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  color: #fff;
+  position: relative;
+  transform: translateY(20px);
+  transition: transform 0.25s ease;
+}
+#sb-auth-modal-overlay.active .sb-auth-card {
+  transform: translateY(0);
+}
+.sb-auth-close {
+  position: absolute;
+  top: 14px; right: 16px;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+.sb-auth-close:hover { color: #fff; }
+.sb-auth-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.sb-auth-logo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #00e676;
+  margin-bottom: 6px;
+}
+.sb-auth-subtitle {
+  font-size: 13px;
+  color: #999;
+}
+.sb-auth-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+.sb-auth-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.sb-auth-tab.active {
+  color: #00e676;
+  border-bottom-color: #00e676;
+}
+.sb-auth-form-group {
+  margin-bottom: 16px;
+}
+.sb-auth-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #bbb;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.sb-auth-input-wrapper {
+  display: flex;
+  background: #22262e;
+  border: 1px solid #333842;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.sb-auth-input-wrapper:focus-within {
+  border-color: #00e676;
+}
+.sb-auth-prefix {
+  padding: 12px 14px;
+  background: #2a2f39;
+  color: #00e676;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+.sb-auth-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 12px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+.sb-auth-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #00e676, #00b0ff);
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  color: #000;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.sb-auth-btn:hover { opacity: 0.95; }
+.sb-auth-btn:active { transform: scale(0.98); }
+.sb-auth-msg {
+  font-size: 12px;
+  margin-top: 12px;
+  text-align: center;
+  min-height: 18px;
+}
+.sb-auth-msg.error { color: #ff5252; }
+.sb-auth-msg.success { color: #00e676; }
+</style>
+
+<div id="sb-auth-modal-overlay">
+  <div class="sb-auth-card">
+    <button class="sb-auth-close" onclick="window.hideLoginModal()">✕</button>
+    <div class="sb-auth-header">
+      <div class="sb-auth-logo">SPORTYBET</div>
+      <div class="sb-auth-subtitle" id="sb-auth-subtitle-txt">Sign in to your account</div>
+    </div>
+    <div class="sb-auth-tabs">
+      <div class="sb-auth-tab active" id="sb-tab-login" onclick="window.switchAuthTab('login')">LOGIN</div>
+      <div class="sb-auth-tab" id="sb-tab-register" onclick="window.switchAuthTab('register')">REGISTER</div>
+    </div>
+    <form id="sb-auth-form" onsubmit="window.handleAuthSubmit(event)">
+      <div class="sb-auth-form-group">
+        <label class="sb-auth-label">Mobile Number</label>
+        <div class="sb-auth-input-wrapper">
+          <div class="sb-auth-prefix">+233</div>
+          <input type="tel" id="sb-auth-phone" class="sb-auth-input" placeholder="0591234567" required autocomplete="tel" />
+        </div>
+      </div>
+      <div class="sb-auth-form-group">
+        <label class="sb-auth-label">Password / PIN</label>
+        <div class="sb-auth-input-wrapper">
+          <input type="password" id="sb-auth-password" class="sb-auth-input" placeholder="Enter password" required autocomplete="current-password" />
+        </div>
+      </div>
+      <button type="submit" class="sb-auth-btn" id="sb-auth-submit-btn">LOG IN</button>
+      <div class="sb-auth-msg" id="sb-auth-msg"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  var _currentTab = 'login';
+  var _onAuthSuccessCb = null;
+
+  window.showLoginModal = function(cb, tab) {
+    if (cb && typeof cb === 'function') _onAuthSuccessCb = cb;
+    if (tab) window.switchAuthTab(tab);
+    var overlay = document.getElementById('sb-auth-modal-overlay');
+    if (overlay) overlay.classList.add('active');
+  };
+
+  window.hideLoginModal = function() {
+    var overlay = document.getElementById('sb-auth-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
+    var msg = document.getElementById('sb-auth-msg');
+    if (msg) msg.textContent = '';
+  };
+
+  window.switchAuthTab = function(tab) {
+    _currentTab = tab;
+    var tLogin = document.getElementById('sb-tab-login');
+    var tReg = document.getElementById('sb-tab-register');
+    var sub = document.getElementById('sb-auth-subtitle-txt');
+    var btn = document.getElementById('sb-auth-submit-btn');
+
+    if (tab === 'login') {
+      if (tLogin) tLogin.classList.add('active');
+      if (tReg) tReg.classList.remove('active');
+      if (sub) sub.textContent = 'Sign in to access your wallet & place bets';
+      if (btn) btn.textContent = 'LOG IN';
+    } else {
+      if (tReg) tReg.classList.add('active');
+      if (tLogin) tLogin.classList.remove('active');
+      if (sub) sub.textContent = 'Create a new account with starting balance';
+      if (btn) btn.textContent = 'CREATE ACCOUNT';
+    }
+  };
+
+  window.handleAuthSubmit = function(e) {
+    e.preventDefault();
+    var phone = document.getElementById('sb-auth-phone').value.trim();
+    var password = document.getElementById('sb-auth-password').value.trim();
+    var msg = document.getElementById('sb-auth-msg');
+    var btn = document.getElementById('sb-auth-submit-btn');
+
+    if (!phone || !password) {
+      if (msg) { msg.className = 'sb-auth-msg error'; msg.textContent = 'Please enter mobile number and password'; }
+      return;
+    }
+
+    if (btn) btn.disabled = true;
+    if (msg) { msg.className = 'sb-auth-msg'; msg.textContent = 'Authenticating with Supabase...'; }
+
+    var endpoint = (_currentTab === 'register') ? '/api/gh/patron/register' : '/api/gh/patron/login';
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: phone, password: password })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (btn) btn.disabled = false;
+      if (res && res.bizCode === 10000 && res.data) {
+        if (msg) { msg.className = 'sb-auth-msg success'; msg.textContent = 'Logged in successfully!'; }
+        setTimeout(function() {
+          window.hideLoginModal();
+          window.checkAuthStatus();
+          if (_onAuthSuccessCb) { _onAuthSuccessCb(); _onAuthSuccessCb = null; }
+        }, 500);
+      } else {
+        if (msg) { msg.className = 'sb-auth-msg error'; msg.textContent = res.message || 'Authentication failed'; }
+      }
+    })
+    .catch(function(err) {
+      if (btn) btn.disabled = false;
+      if (msg) { msg.className = 'sb-auth-msg error'; msg.textContent = 'Connection error. Please try again.'; }
+    });
+  };
+
+  window.performLogout = function() {
+    fetch('/api/gh/patron/logout', { method: 'POST' })
+      .then(function() {
+        window.checkAuthStatus();
+      })
+      .catch(function() {
+        window.checkAuthStatus();
+      });
+  };
+
+  window.checkAuthStatus = function() {
+    fetch('/api/gh/patron/account/info?_t=' + Date.now())
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        var isLoggedIn = (res && res.bizCode === 10000 && res.data);
+        if (isLoggedIn && typeof window.refreshWalletUI === 'function') {
+          window.refreshWalletUI();
+        }
+      })
+      .catch(function() {});
+  };
+
+  document.addEventListener('click', function(e) {
+    var target = e.target.closest('[href*="deposit"], [href*="withdraw"], .m-btn--deposit, .m-btn--withdraw, [data-op="deposit"], [data-op="withdraw"]');
+    if (target) {
+      fetch('/api/gh/patron/account/info')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          if (!res || res.bizCode !== 10000) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.showLoginModal(function() {
+              if (target.href) window.location.href = target.href;
+            });
+          }
+        }).catch(function() {});
+    }
+  }, true);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.checkAuthStatus);
+  } else {
+    window.checkAuthStatus();
+  }
+})();
+</script>
+</body>
+</html>

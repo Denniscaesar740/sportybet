@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ham_sound-CZnvMfP3.png`;export{e as t};

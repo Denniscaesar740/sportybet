@@ -1,0 +1,1 @@
+import{r as e}from"./rolldown-runtime-DAXXjFlN.js";var t=e({default:()=>n}),n=`/sportygames/assets/effect-sPlJ4wrk.png`;export{t as n,n as t};

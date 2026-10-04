@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/arrow_back_white-jF_vltkP.svg`;export{e as t};

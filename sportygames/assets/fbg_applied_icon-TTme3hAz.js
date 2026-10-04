@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/fbg_applied_icon-CUlufs3U.png`;export{e as t};

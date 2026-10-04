@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/empty_favourite_logo_dark_theme-C7eqrm3p.svg`;export{e as t};

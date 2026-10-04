@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/lhs_gift-SG8sRvQ6.png`;export{e as t};

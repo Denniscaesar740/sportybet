@@ -1,0 +1,1 @@
+var e=new Map;function t(t,n=1){let r=e.get(t);return r?r.betAmount>0?r.betAmount:r.base>0?r.base:n:n}function n(t,n,r){if(!t)return;let i=Number(n),a=Number(r),o={...e.get(t)||{}};isFinite(i)&&(o.multiplier=i),isFinite(a)&&(o.betAmount=a),o.betAmount>0&&`base`in o&&delete o.base,e.set(t,o)}export{n,t};

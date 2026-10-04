@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/error-BeZCgdAw.png`;export{e as t};

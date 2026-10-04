@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/chip_broken_light_theme-IQVcc9it.webp`,t=`/sportygames/assets/deposit_icon-BnFmDuew.png`;export{e as n,t};

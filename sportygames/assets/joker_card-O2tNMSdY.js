@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/joker_card-CnyoLW9p.svg`;export{e as t};

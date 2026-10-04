@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/coins-DyR8wrwV.webp`;export{e as t};

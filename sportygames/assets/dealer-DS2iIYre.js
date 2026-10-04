@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/dealer-CJHrtHCj.png`;export{e as t};

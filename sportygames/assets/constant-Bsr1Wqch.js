@@ -1,0 +1,22 @@
+import{r as e}from"./rolldown-runtime-DAXXjFlN.js";import{t}from"./right-arrow-pjE7qqh7.js";import{t as n}from"./constant-B7WkGnnk.js";import{t as r}from"./joker_card-O2tNMSdY.js";import{t as i}from"./fbg_icon-ktSfN8iu.js";var a=e({HOW_TO_PLAY:()=>c,RED_BLACK_GAME_NAME:()=>o,isFBGEnabled:()=>!0,onboardingCordinates:()=>p,rtpValue:()=>`97%`}),o=`red-black`,s=!0,c={title:`About Red-Black`,message:`
+      1. The objective of this game is to choose the color of the drawn card, which can be either RED, BLACK, or a GREEN (see #4).
+      2. Each round of this game consists of up to a maximum of FIVE playable turns (hands). In other words, the player can bet on the color of the next face-down card drawn from the deck for a maximum of FIVE times in a particular round.
+      3. Please note that each round is played using a single, well-shuffled deck of 52 cards plus jokers (see #4). The player has the advantage of knowing the history of the previously drawn cards and can use this to their benefit when placing a bet on a decision.
+      4. Caution: Watch out for the Green Joker cards shown below. These cards are rare but can appear randomly throughout the game. These cards are over and above the standard deck of 52 cards and are neither Red nor Black. Drawing this card will result in a loss of the current turn for the player.
+      ${r}
+      5. Players can select their desired stake amount by adjusting the slider between the minimum and maximum values or by pressing on the chips.
+      6. Previously drawn cards in each round are shown to the left of the game board.
+      7. Each winning turn (hand) PAYS DOUBLE (2X) the stake amount. This payout will become the new minimum required bet for the next turn (hand), this rule is applicable for all consecutive turns (hands) in a single round. However, starting a new round or losing the current hand resets the stake value to the default stake.
+      8. Players can start a new round at any point in the game.
+      9. STAKES and PAYOUTS are debited/credited on a per turn (hand) basis.
+      10. Players can click on Bet History button inside the Ham Menu and view the history of bets placed by them.
+      11. Turning on One-Tap Bet will stop bet confirmations from appearing.
+      ${`
+      FREE BET GIFT
+
+      1. You can check the Free Bet Gifts available for you by clicking on the Gift icon on the screen. If you do not have any Free Bet Gifts available, the Gift icon will not be shown.
+      ${i}
+      2. You can choose to use the full gift amount or the partial gift amount for your bet.
+      3. You cannot place a bet using real money along with Free Bet Gift. You can only use one of the two to place bet.
+        `}
+      `},l=[{rectCord:{x:`15`,y:`418`,rx:`30`,ry:`30`,width:`330`,height:`150`,strokeWidth:`3`},rectBorderCord:{x:`15`,y:`418`,rx:`30`,ry:`30`,width:`330`,height:`150`,strokeWidth:`3`}}],u=[{rectCord:{x:`0`,y:`592`,rx:`0`,ry:`0`,width:`100%`,height:`55`},rectBorderCord:{x:`3`,y:`595`,rx:`0`,ry:`0`,width:`98%`,height:`49`,strokeWidth:`2`}}],d=[{masks:l,textKey:{key:`select_bet_amount`,page:`sg_onboarding`,defaultText:`Select Bet Amount`,bottom:`300px`,width:`194px`,left:`73px`},imageCord:{right:`40%`,top:`350px`,transform:`scaleY(-1)`,width:`60px`,path:t}},{masks:u,textKey:{key:`select_to_place_bet`,page:`sg_onboarding`,defaultText:`Select Your Pick To Place Bet`,bottom:`120px`,width:`200px`,left:`70px`},imageCord:{right:`43%`,bottom:`60px`,transform:`scaleY(-1)`,width:`60px`,path:t}},{masks:[{rectCord:{x:`250`,y:`14`,rx:`8`,ry:`8`,width:`50`,height:`35`},rectBorderCord:{x:`250`,y:`14`,rx:`8`,ry:`8`,width:`50`,height:`35`,strokeWidth:`2`}}],textKey:{key:`chat_with_players`,page:`sg_onboarding`,defaultText:`Chat With Other Players`,top:`22%`,right:`82px`,maxWidth:`227px`},imageCord:{right:`18%`,top:`66px`,width:`60px`,path:t}}],f=[{masks:l,textKey:{key:`select_bet_amount`,page:`sg_onboarding`,defaultText:`Select Bet Amount`,bottom:`300px`,width:`194px`,left:`73px`},imageCord:{right:`40%`,top:`350px`,transform:`scaleY(-1)`,width:`60px`,path:t}},{masks:u,textKey:{key:`select_to_place_bet`,page:`sg_onboarding`,defaultText:`Select Your Pick To Place Bet`,bottom:`120px`,width:`200px`,left:`70px`},imageCord:{right:`43%`,bottom:`60px`,transform:`scaleY(-1)`,width:`60px`,path:t}}],p={...Object.fromEntries(Object.values(n).map(e=>[e,d])),...Object.fromEntries(Object.values(n).map(e=>[`${e}-no-chat`,f]))},m=`97%`;export{m as a,s as i,o as n,a as r,c as t};

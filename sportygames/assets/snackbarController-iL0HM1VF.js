@@ -1,0 +1,1 @@
+var e=null,t=t=>{e=t},n=()=>e,r=t=>{e&&typeof e.show==`function`?e.show(t):console.warn(`[Snackbar] Instance not yet registered.`)};export{t as n,r,n as t};

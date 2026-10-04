@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/tap_icon-BDPh2XBs.webp`,t=`/sportygames/assets/lock_icon-B6jiyVLf.webp`,n=`/sportygames/assets/gamepad_icon_golden-3tck6NgY.webp`;export{t as n,e as r,n as t};

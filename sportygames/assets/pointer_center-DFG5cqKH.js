@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/logo-D6wgm2NZ.png`,t=`/sportygames/assets/pointer_center-CqOMtTxu.png`;export{e as n,t};

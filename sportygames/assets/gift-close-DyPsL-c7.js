@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/gift-close-CkAR_eCP.png`;export{e as t};

@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/twilight-Bg_iTYtw.png`;export{e as t};

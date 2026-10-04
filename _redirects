@@ -1,0 +1,14 @@
+# Netlify redirects file
+# Proxy backend API requests to Render backend
+/gh/m/cms/*                  https://YOUR-RENDER-BACKEND-URL.onrender.com/gh/m/cms/:splat                  200!
+/gh/m/api/*                  https://YOUR-RENDER-BACKEND-URL.onrender.com/gh/m/api/:splat                  200!
+/gh/m/instant-virtuals/api/* https://YOUR-RENDER-BACKEND-URL.onrender.com/gh/m/instant-virtuals/api/:splat 200!
+/gh/m/orders/*               https://YOUR-RENDER-BACKEND-URL.onrender.com/gh/m/orders/:splat               200!
+/gh/m/pocket/*               https://YOUR-RENDER-BACKEND-URL.onrender.com/gh/m/pocket/:splat               200!
+/gh/sportygames/api/*        https://YOUR-RENDER-BACKEND-URL.onrender.com/gh/sportygames/api/:splat        200!
+/api/*                       https://YOUR-RENDER-BACKEND-URL.onrender.com/api/:splat                       200!
+
+# SPA client side routing fallback for main static pages
+/gh/m/*                      /index.html                        200
+/gh/sportygames/*            /index.html                        200
+/*                           /index.html                        200

@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/you_win-C4halmm8.png`,t=`/sportygames/assets/win_amount_bg-RNANCy50.png`;export{e as n,t};

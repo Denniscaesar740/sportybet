@@ -1,0 +1,41 @@
+{
+  "name": "SportyBet",
+  "short_name": "SportyBet",
+  "description": "betting",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/global/main/logo/96x96.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "/global/main/logo/144x144.png",
+      "type": "image/png",
+      "sizes": "144x144"
+    },
+    {
+      "src": "/global/main/logo/196x196.png",
+      "type": "image/png",
+      "sizes": "196x196"
+    },
+    {
+      "src": "/global/main/logo/512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#E41827",
+  "background_color": "#E41827",
+  "start_url": "/gh/m/sport",
+  "scope": "/",
+  "shortcuts" : [
+    {
+      "name": "Today's Football",
+      "url": "/gh/m/sport",
+      "description": "Upcoming Football Games"
+    }
+  ]
+}

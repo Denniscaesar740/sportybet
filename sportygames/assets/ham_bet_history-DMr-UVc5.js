@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ham_bet_history-CrUIhxWK.png`;export{e as t};

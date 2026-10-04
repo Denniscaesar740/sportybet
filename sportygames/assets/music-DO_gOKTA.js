@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/music-BWNYWRv0.mp3`;export{e as t};

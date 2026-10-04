@@ -1,0 +1,1 @@
+import{f as e}from"./utilities-DhDDLzAx.js";var t={data(){return{ChatModal:null}},async created(){this.ChatModal=await e()},methods:{getChatModal:e}};export{t};

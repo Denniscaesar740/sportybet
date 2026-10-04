@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/win_bg_new-C1ykiyC9.png`;export{e as t};

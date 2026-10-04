@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/pointer_new-CO3AR9SD.png`,t=`/sportygames/assets/eraser_new-BckMe__J.png`;export{e as n,t};

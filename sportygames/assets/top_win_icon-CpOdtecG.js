@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/top_win_icon-DVy95zFi.png`;export{e as t};

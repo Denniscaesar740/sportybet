@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/gift-D18zf27h.png`,t=`/sportygames/assets/cross-CfXbshao.png`;export{e as n,t};

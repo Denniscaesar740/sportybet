@@ -1,0 +1,1 @@
+var e={sg_sporty_kick:{finding_you_room:`Finding you a room..`}};export{e as t};

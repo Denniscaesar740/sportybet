@@ -1,0 +1,1 @@
+var e=`https://s.sporty.net/sportygames/assets/placeholder_icon-DQesZNKo.png`;export{e as t};

@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/share_to_social_media-BkYSRm--.png`;export{e as t};

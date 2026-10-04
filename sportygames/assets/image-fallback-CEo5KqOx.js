@@ -1,0 +1,1 @@
+(function(){let e=window.BASE_PATH,t=window.FALLBACK_CDN_DOMAIN;if(!e||!t)return;let n=new URL(e).hostname;document.addEventListener(`error`,e=>{let r=e.target;if(!(r instanceof HTMLImageElement))return;let i=r.src;try{if(!i.includes(n))return;let e=i.replace(n,t);r.src!==e&&(r.src=e)}catch{}},!0)})();

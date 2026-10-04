@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/Sigmar-Regular-BbF1PQ4h.ttf`;export{e as t};

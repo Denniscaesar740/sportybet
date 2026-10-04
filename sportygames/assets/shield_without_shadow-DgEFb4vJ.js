@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/shield_without_shadow-DUe3RUkm.png`;export{e as t};

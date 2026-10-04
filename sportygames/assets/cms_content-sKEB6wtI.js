@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/how_to_play_table-pOd1lBIf.png`,t={sg_spin_da_bottle:{}};export{e as n,t};

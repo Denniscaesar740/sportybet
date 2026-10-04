@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/spotlight_icon-BIi0bM5v.png`;export{e as t};

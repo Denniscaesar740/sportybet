@@ -1,0 +1,1 @@
+import{Gr as e}from"./utilities-DhDDLzAx.js";var t=3,n=0,r=async()=>i({retry:t,retryDelay:n}),i=async t=>{if(t.retry){--t.retry;let n;return n=t.retryDelay?new Promise(e=>{setTimeout(()=>{e()},t.retryDelay)}):Promise.resolve(),n.then(async()=>{let n;try{n=await e()}catch{}return n===1?1:i(t)})}return-1};export{r as t};

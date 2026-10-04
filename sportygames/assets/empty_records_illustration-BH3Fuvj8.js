@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/empty_records_illustration-76r7zYDh.png`;export{e as t};

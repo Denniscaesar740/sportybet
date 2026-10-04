@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/logo-Dza9cfi9.png`;export{e as t};

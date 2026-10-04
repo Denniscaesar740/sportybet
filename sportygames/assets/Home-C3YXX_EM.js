@@ -1,0 +1,1 @@
+import{Zt as e}from"./utilities-DhDDLzAx.js";import{I as t,d as n}from"./runtime-core.esm-bundler-BxYmWHN0.js";import{t as r}from"./_plugin-vue_export-helper-BDNMzG2s.js";var i={name:`Home`,mounted(){e.replace({name:`Lobby`})}},a={class:`sg-home`};function o(e,r,i,o,s,c){return t(),n(`div`,a)}var s=r(i,[[`render`,o],[`__scopeId`,`data-v-59fdd6ee`]]);export{s as default};

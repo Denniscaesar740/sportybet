@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/rain_upcoming_big-XYSrac8G.svg`,t=`/sportygames/assets/invalid_claim_cross_icon-_CetnHA6.svg`;export{e as n,t};

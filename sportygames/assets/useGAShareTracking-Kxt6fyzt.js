@@ -1,0 +1,1 @@
+var e=()=>({trackShareGameLaunch:()=>{try{let e=new URLSearchParams(window.parent.location.search);e.get(`utm_campaign`)===`sporty_share`&&window._ga4Event(`ShareGameLaunch`,{eventCategory:`Game`,Campaign:e.get(`utm_campaign`),Source:e.get(`utm_source`),Medium:e.get(`utm_medium`),OrderID:e.get(`orderId`)})}catch{}}});export{e as t};

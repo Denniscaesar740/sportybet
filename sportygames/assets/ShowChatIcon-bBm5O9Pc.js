@@ -1,0 +1,1 @@
+var e={computed:{showChatIcon(){return Object.keys(this.chatRoomInfo).length>0&&this.chatRoomInfo.chatRoomId&&this.chatRoomInfo.chatRoomId!==``&&(window.USER_ID||this.isGuestUser)}}};export{e as t};

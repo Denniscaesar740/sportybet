@@ -1,0 +1,1 @@
+import{t as e}from"./rolldown-runtime-DAXXjFlN.js";import{mi as t,pi as n}from"./utilities-DhDDLzAx.js";var r=e(((e,r)=>{var i=t(),a=n(),o=`[object Number]`;function s(e){return typeof e==`number`||a(e)&&i(e)==o}r.exports=s}));export{r as t};

@@ -1,0 +1,1 @@
+import{v as e}from"./reactivity.esm-bundler-CkXmewtV.js";var t=()=>{let t=e(),n=e();return{acquireLock:()=>(t.value||(t.value=new Promise(e=>n.value=e)),t.value),releaseLock:()=>{let e=n.value;e&&(e(),n.value=void 0,t.value=void 0)}}};export{t};

@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/trophy_no_logo-CKo6kXlz.webp`;export{e as t};

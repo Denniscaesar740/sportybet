@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/ham_recent_win-DsfGIvpc.png`;export{e as t};

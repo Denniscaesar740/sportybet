@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/game_limits-ql4YyF70.svg`;export{e as t};

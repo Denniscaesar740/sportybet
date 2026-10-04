@@ -1,0 +1,3 @@
+import{o as e}from"./rolldown-runtime-DAXXjFlN.js";import{t}from"./dayjs.min-B2amGodu.js";var n=e(t());function r(e,t=!1){try{let r=(0,n.default)(e).toDate(),i=r.getHours().toString().padStart(2,`0`),a=r.getMinutes().toString().padStart(2,`0`),o=r.getDate().toString().padStart(2,`0`),s=(r.getMonth()+1).toString().padStart(2,`0`);return t?`${i}:${a} ${o}.${s}.${r.getFullYear().toString()}`:`${i}:${a}\n${o}/${s}/${r.getFullYear().toString().split(``).splice(2,2).join(``)}`}catch{return`N/A
+`}}function i(e){try{return(0,n.default)(e).format(`DD/MM/YYYY`)}catch{return`N/A
+`}}export{r as n,i as t};

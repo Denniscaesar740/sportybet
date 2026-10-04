@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/right-arrow-BAFp2Gmf.png`;export{e as t};

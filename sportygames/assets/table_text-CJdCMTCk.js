@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/table_text-DVy35Zu0.png`;export{e as t};

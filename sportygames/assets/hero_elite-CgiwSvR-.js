@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/hero_elite-CXOvlzOH.png`;export{e as t};

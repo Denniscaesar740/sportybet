@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/sporty_trophy-C4vUnXfb.png`;export{e as t};

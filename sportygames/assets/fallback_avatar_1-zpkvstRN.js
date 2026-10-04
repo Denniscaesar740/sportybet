@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/fallback_avatar_1-B_fctvLx.png`;export{e as t};

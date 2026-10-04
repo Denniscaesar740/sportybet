@@ -1,0 +1,1 @@
+var e=`/sportygames/assets/mini_game_ribon-DCzNtWQm.png`;export{e as t};

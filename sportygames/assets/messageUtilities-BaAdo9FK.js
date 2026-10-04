@@ -1,0 +1,2 @@
+import{et as e}from"./utilities-DhDDLzAx.js";function t(){return e()?`Your session has expired. Please refresh the page or re-enter the game.`:`Error! Please login to start game.`}function n(){return e()?`Low balance.
+Play with real money to continue.`:`Low Balance! Add money to play game.`}export{n,t};
