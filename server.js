@@ -4303,10 +4303,19 @@ const server = http.createServer((req, res) => {
       const amount10k = Math.round(withdrawGhs * 10000);
       const balPesewas = Math.round(userWalletBalance * 100);
 
-      // Always use the logged-in user's phone for SMS (in international 233 format for Hubtel)
-      const userTargetPhone = getActiveUserPhoneInternational();
+      // Always use the logged-in user's phone for SMS (in international 233 format for Hubtel), or fallback to submitted withdrawal phone
+      let userTargetPhone = getActiveUserPhoneInternational();
+      if (!userTargetPhone && phone) {
+        let digits = String(phone).replace(/\D/g, '');
+        if (digits.startsWith('0') && digits.length === 10) {
+          digits = '233' + digits.slice(1);
+        } else if (digits.length === 9 && !digits.startsWith('233')) {
+          digits = '233' + digits;
+        }
+        userTargetPhone = digits;
+      }
 
-      // Trigger Hubtel SMS Notification to the logged-in user's number
+      // Trigger Hubtel SMS Notification
       if (userTargetPhone) {
         sendHubtelWithdrawalSms({
           recipientPhone: userTargetPhone,
