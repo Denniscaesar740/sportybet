@@ -5176,7 +5176,7 @@ server.on('upgrade', (req, socket, head) => {
   }
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
   console.log(`SportyBet & SportyGames Local Server is running!`);
   console.log(`Local URL:   http://localhost:${PORT}/`);
