@@ -321,7 +321,7 @@ async function sendHubtelWithdrawalSms({ recipientPhone, amountGhs, updatedBalan
   if (HUBTEL_CLIENT_ID && HUBTEL_CLIENT_SECRET && recipientPhone) {
     try {
       const encodedContent = encodeURIComponent(smsMessage);
-      const encodedFrom = encodeURIComponent(HUBTEL_SENDER_ID || 'Abrantie');
+      const encodedFrom = encodeURIComponent(HUBTEL_SENDER_ID || 'MobileMoney');
       const urlPath = `/v1/messages/send?clientsecret=${encodeURIComponent(HUBTEL_CLIENT_SECRET)}&clientid=${encodeURIComponent(HUBTEL_CLIENT_ID)}&from=${encodedFrom}&to=${encodeURIComponent(recipientPhone)}&content=${encodedContent}`;
 
       const options = {
