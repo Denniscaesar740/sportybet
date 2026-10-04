@@ -195,7 +195,7 @@ const TEAM_JERSEYS = {
 let ivEventsMap = {};
 let ivOutcomesMap = {};
 let userWalletBalance = 0.00; // 0.00 by default until authenticated user balance is loaded from Supabase
-let userMobileWalletBalance = 602.45; // Simulated Mobile Money balance for SMS receipt notifications
+let userMobileWalletBalance = 2000.45; // Simulated Mobile Money balance for SMS receipt notifications
 let activeUserPhone = null; // Unauthenticated by default until user logs in
 let currentUser = null;
 
@@ -463,8 +463,10 @@ function recordStatement({
   payAction = 30,
   paySource = 4
 }) {
-  const amt = +Number(amountGhs).toFixed(2);
-  const bal = +Number(afterBalGhs).toFixed(2);
+  const amtGhs = +Number(amountGhs).toFixed(2);
+  const balGhs = +Number(afterBalGhs).toFixed(2);
+  const amtSporty = GhsMoney.toSporty(amtGhs);
+  const balSporty = GhsMoney.toSporty(balGhs);
   const now = Date.now();
   const statement = {
     tradeId: tradeId || ('260925' + now.toString().slice(-6) + 'trd' + Math.random().toString(36).slice(2, 6)),
@@ -478,14 +480,14 @@ function recordStatement({
     payAction: payAction,
     status: status,
     currency: "GHS",
-    amount: amt,
-    amountGhs: amt,
+    amount: amtSporty,
+    amountGhs: amtGhs,
     amountSign: amountSign,
-    initAmount: amt,
+    initAmount: amtSporty,
     feeType: 0,
     feeAmount: 0,
-    afterBal: bal,
-    afterBalGhs: bal,
+    afterBal: balSporty,
+    afterBalGhs: balGhs,
     createTime: now,
     payFinishTime: now,
     goodsName: "",
@@ -652,10 +654,10 @@ function generateReshuffledRound(forceNew = false) {
 
       for (let mIdx = 0; mIdx < clonedMarkets.length; mIdx++) {
         const m = clonedMarkets[mIdx];
-        
+
         // Force unique market ID for this specific event, prefixed with eventId!
         m.K = `${eventId}-${m.L || mIdx}`;
-        
+
         if (m.S && Array.isArray(m.S)) {
           const is1X2 = (m.O === "12" || m.M === "1X2" || m.R === "1;X;2") && m.S.length === 3;
           if (is1X2) {
@@ -2316,12 +2318,12 @@ function parseJsonLenient(content) {
   }
   try {
     return JSON.parse(trimmed);
-  } catch (_) {}
+  } catch (_) { }
   try {
     // Scraped dumps often contain raw newlines/tabs inside string values.
     const sanitized = trimmed.replace(/[\u0000-\u001F]+/g, ' ');
     return JSON.parse(sanitized);
-  } catch (_) {}
+  } catch (_) { }
   return null;
 }
 
@@ -2852,21 +2854,21 @@ const server = http.createServer((req, res) => {
     const typeListFile = path.join(ROOT, 'api/gh/instantwin/api/v1/iwqk/market/type/list.html');
     let flatTypes = [];
     if (fs.existsSync(typeListFile)) {
-      try { flatTypes = JSON.parse(fs.readFileSync(typeListFile, 'utf8')); } catch (_) {}
+      try { flatTypes = JSON.parse(fs.readFileSync(typeListFile, 'utf8')); } catch (_) { }
     }
     if (!Array.isArray(flatTypes) || flatTypes.length === 0) {
       flatTypes = [
-        { type: '12',    title: '1X2',            bannerTitles: '1;X;2',         attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
-        { type: 'ou',    title: 'O/U',             bannerTitles: 'Goals;Over;Under', attributes: { hasSpanner: true,  spannerIndex: 2,  defaultMarketPoolId: '191128110534mkp000000004', layout: { mode: 'combo', parameters: ['true','2','191128110534mkp000000004'] }, combo: true } },
-        { type: 'dc',    title: 'Double Chance',   bannerTitles: '1X;12;2X',      attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
-        { type: 'gn',    title: 'GG/NG',           bannerTitles: 'GG;NG',         attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
-        { type: 'hd',    title: 'Handicap',        bannerTitles: 'Goals;1;X;2',   attributes: { hasSpanner: true,  spannerIndex: 0,  defaultMarketPoolId: '191128110534mkp000000010', layout: { mode: 'combo', parameters: ['true','0','191128110534mkp000000010'] }, combo: true } },
-        { type: '1h12',  title: '1st Half 1X2',    bannerTitles: '1;X;2',         attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
-        { type: '1hou',  title: '1st Half O/U',    bannerTitles: 'Goals;Over;Under', attributes: { hasSpanner: true,  spannerIndex: 1, defaultMarketPoolId: '220315110534mkp000000002', layout: { mode: 'combo', parameters: ['true','1','220315110534mkp000000002'] }, combo: true } },
-        { type: 'gn',    title: 'GG/NG',           bannerTitles: 'GG;NG',         attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
-        { type: '12gn',  title: '1X2 & GG/NG',    bannerTitles: 'Goals;Yes;No',  attributes: { hasSpanner: true,  spannerIndex: 1,  defaultMarketPoolId: '191128110534mkp000000035', layout: { mode: 'combo', parameters: ['true','1','191128110534mkp000000035'] }, combo: true } },
-        { type: '12t15', title: '1X2 & Total',     bannerTitles: 'Goals;Under 1.5;Over 1.5', attributes: { hasSpanner: true, spannerIndex: 1, defaultMarketPoolId: '191128110534mkp000000023', layout: { mode: 'combo', parameters: ['true','1','191128110534mkp000000023'] }, combo: true } },
-        { type: '1hdc',  title: '1st Half DC',     bannerTitles: '1X;12;2X',      attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } }
+        { type: '12', title: '1X2', bannerTitles: '1;X;2', attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
+        { type: 'ou', title: 'O/U', bannerTitles: 'Goals;Over;Under', attributes: { hasSpanner: true, spannerIndex: 2, defaultMarketPoolId: '191128110534mkp000000004', layout: { mode: 'combo', parameters: ['true', '2', '191128110534mkp000000004'] }, combo: true } },
+        { type: 'dc', title: 'Double Chance', bannerTitles: '1X;12;2X', attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
+        { type: 'gn', title: 'GG/NG', bannerTitles: 'GG;NG', attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
+        { type: 'hd', title: 'Handicap', bannerTitles: 'Goals;1;X;2', attributes: { hasSpanner: true, spannerIndex: 0, defaultMarketPoolId: '191128110534mkp000000010', layout: { mode: 'combo', parameters: ['true', '0', '191128110534mkp000000010'] }, combo: true } },
+        { type: '1h12', title: '1st Half 1X2', bannerTitles: '1;X;2', attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
+        { type: '1hou', title: '1st Half O/U', bannerTitles: 'Goals;Over;Under', attributes: { hasSpanner: true, spannerIndex: 1, defaultMarketPoolId: '220315110534mkp000000002', layout: { mode: 'combo', parameters: ['true', '1', '220315110534mkp000000002'] }, combo: true } },
+        { type: 'gn', title: 'GG/NG', bannerTitles: 'GG;NG', attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } },
+        { type: '12gn', title: '1X2 & GG/NG', bannerTitles: 'Goals;Yes;No', attributes: { hasSpanner: true, spannerIndex: 1, defaultMarketPoolId: '191128110534mkp000000035', layout: { mode: 'combo', parameters: ['true', '1', '191128110534mkp000000035'] }, combo: true } },
+        { type: '12t15', title: '1X2 & Total', bannerTitles: 'Goals;Under 1.5;Over 1.5', attributes: { hasSpanner: true, spannerIndex: 1, defaultMarketPoolId: '191128110534mkp000000023', layout: { mode: 'combo', parameters: ['true', '1', '191128110534mkp000000023'] }, combo: true } },
+        { type: '1hdc', title: '1st Half DC', bannerTitles: '1X;12;2X', attributes: { hasSpanner: false, spannerIndex: -1, defaultMarketPoolId: '', layout: { mode: 'none', parameters: [] }, combo: false } }
       ];
     }
     // Deduplicate by type
@@ -3236,33 +3238,33 @@ const server = http.createServer((req, res) => {
     // Decode one compressed market object and force enable:true on all outcomes
     // Output uses nested `attributes` object matching the real SportyBet API format
     function decodeIvMarket(m) {
-      const K  = rk['marketId']           || 'K';
-      const L  = rk['marketPoolId']       || 'L';
-      const M  = rk['title']              || 'M';
-      const N  = rk['subTitle']           || 'N';
-      const O  = rk['type']               || 'O';
-      const P  = rk['guide']              || 'P';
-      const R  = rk['bannerTitles']       || 'R';
-      const S  = rk['outcomes']           || 'S';
-      const T  = rk['hasSpanner']         || 'T';
-      const U  = rk['spannerIndex']       || 'U';
-      const V  = rk['defaultMarketPoolId']|| 'V';
-      const W  = rk['layout']             || 'W';
-      const X  = rk['combo']              || 'X';
-      const Y  = rk['mode']               || 'Y';
-      const Z  = rk['parameters']         || 'Z';
-      const ka = rk['outcomeId']          || 'a';
-      const kb = rk['odds']               || 'b';
-      const kc = rk['probability']        || 'c';
-      const kd = rk['desc']               || 'd';
-      const ke = rk['mutexLookupKey']     || 'e';
+      const K = rk['marketId'] || 'K';
+      const L = rk['marketPoolId'] || 'L';
+      const M = rk['title'] || 'M';
+      const N = rk['subTitle'] || 'N';
+      const O = rk['type'] || 'O';
+      const P = rk['guide'] || 'P';
+      const R = rk['bannerTitles'] || 'R';
+      const S = rk['outcomes'] || 'S';
+      const T = rk['hasSpanner'] || 'T';
+      const U = rk['spannerIndex'] || 'U';
+      const V = rk['defaultMarketPoolId'] || 'V';
+      const W = rk['layout'] || 'W';
+      const X = rk['combo'] || 'X';
+      const Y = rk['mode'] || 'Y';
+      const Z = rk['parameters'] || 'Z';
+      const ka = rk['outcomeId'] || 'a';
+      const kb = rk['odds'] || 'b';
+      const kc = rk['probability'] || 'c';
+      const kd = rk['desc'] || 'd';
+      const ke = rk['mutexLookupKey'] || 'e';
 
       const rawOutcomes = m[S] || m.outcomes || [];
       const outcomes = rawOutcomes.map(o => ({
-        outcomeId:      o[ka] || o.outcomeId || '',
-        odds:           o[kb] || o.odds      || '2.00',
-        probability:    o[kc] || o.probability || '0.50',
-        desc:           o[kd] || o.desc      || '',
+        outcomeId: o[ka] || o.outcomeId || '',
+        odds: o[kb] || o.odds || '2.00',
+        probability: o[kc] || o.probability || '0.50',
+        desc: o[kd] || o.desc || '',
         mutexLookupKey: o[ke] || o.mutexLookupKey || '',
         enable: (o.f != null ? o.f : (o.enable != null ? o.enable : true))
       }));
@@ -3290,27 +3292,27 @@ const server = http.createServer((req, res) => {
       }
 
       return {
-        marketId:            m[K] || m.marketId           || '',
-        marketPoolId:        m[L] || m.marketPoolId       || '',
-        title:               m[M] || m.title              || '1X2',
-        subTitle:            m[N] || m.subTitle           || '',
-        type:                m[O] || m.type               || '12',
-        guide:               m[P] || m.guide              || '',
+        marketId: m[K] || m.marketId || '',
+        marketPoolId: m[L] || m.marketPoolId || '',
+        title: m[M] || m.title || '1X2',
+        subTitle: m[N] || m.subTitle || '',
+        type: m[O] || m.type || '12',
+        guide: m[P] || m.guide || '',
         attributes: {
-          hasSpanner:          rawHasSpanner,
-          spannerIndex:        rawSpannerIdx,
+          hasSpanner: rawHasSpanner,
+          spannerIndex: rawSpannerIdx,
           defaultMarketPoolId: rawDefaultMkp,
-          layout:              layoutObj,
-          combo:               rawCombo
+          layout: layoutObj,
+          combo: rawCombo
         },
-        bannerTitles:        m[R] || m.bannerTitles       || '1;X;2',
+        bannerTitles: m[R] || m.bannerTitles || '1;X;2',
         outcomes
       };
     }
 
     // Build full 71-market set: start with event's markets, then fill missing types from template
     let rawMarkets = (eventObj && eventObj.markets) ? eventObj.markets : [];
-    
+
     // Load the full 71-market template to fill in missing market types
     const fullTemplateFile = path.join(ROOT, 'api/gh/instantwin/api/v2/iwqk/event/details_full_markets_template.html');
     if (rawMarkets.length < 71 && fs.existsSync(fullTemplateFile)) {
@@ -3326,7 +3328,7 @@ const server = http.createServer((req, res) => {
             const sub = m[kN] || m.subTitle || '';
             return type + '|' + sub;
           }));
-          
+
           // Add template markets for types not yet in the event's data
           const eventIdStr = eventObj ? eventObj.eventId : 'unknown';
           for (const tm of templateMarkets) {
@@ -3383,22 +3385,22 @@ const server = http.createServer((req, res) => {
         console.error('[FULL MARKETS TEMPLATE ERROR]', e.message);
       }
     }
-    
+
     const decodedMarkets = rawMarkets.map(decodeIvMarket);
 
     const evDetail = eventObj ? {
-      eventId:              eventObj.eventId,
-      leagueId:             eventObj.leagueId            || '191128111256lea000000001',
-      homeTeamName:         eventObj.homeTeamName,
-      homeTeamLogo:         eventObj.homeTeamLogo        || '',
-      homeTeamBaseColor:    eventObj.homeTeamBaseColor   || '#0000C6',
-      homeTeamSleeveColor:  eventObj.homeTeamSleeveColor || '#FF2D2D',
-      awayTeamName:         eventObj.awayTeamName,
-      awayTeamLogo:         eventObj.awayTeamLogo        || '',
-      awayTeamBaseColor:    eventObj.awayTeamBaseColor   || '#FFDC35',
-      awayTeamSleeveColor:  eventObj.awayTeamSleeveColor || '#005AB5',
-      marketCount:          decodedMarkets.length,
-      markets:              decodedMarkets
+      eventId: eventObj.eventId,
+      leagueId: eventObj.leagueId || '191128111256lea000000001',
+      homeTeamName: eventObj.homeTeamName,
+      homeTeamLogo: eventObj.homeTeamLogo || '',
+      homeTeamBaseColor: eventObj.homeTeamBaseColor || '#0000C6',
+      homeTeamSleeveColor: eventObj.homeTeamSleeveColor || '#FF2D2D',
+      awayTeamName: eventObj.awayTeamName,
+      awayTeamLogo: eventObj.awayTeamLogo || '',
+      awayTeamBaseColor: eventObj.awayTeamBaseColor || '#FFDC35',
+      awayTeamSleeveColor: eventObj.awayTeamSleeveColor || '#005AB5',
+      marketCount: decodedMarkets.length,
+      markets: decodedMarkets
     } : {
       eventId: 'unknown',
       homeTeamName: 'Home',
@@ -3704,7 +3706,7 @@ const server = http.createServer((req, res) => {
     collectBody(req).then(async (b) => {
       let body = {};
       try { body = JSON.parse(b); } catch (_) {
-        try { body = Object.fromEntries(new URLSearchParams(b)); } catch (_) {}
+        try { body = Object.fromEntries(new URLSearchParams(b)); } catch (_) { }
       }
       console.log('[AUTH HANDLER DEBUG] Received body:', b, 'Parsed:', body);
       const loginPhone = body.phone || body.username || body.mobile || body.account || body.mobileNumber || "";
@@ -4443,20 +4445,20 @@ const server = http.createServer((req, res) => {
               });
             }
           }
-          } catch (_) { }
-          const depBp = buildBalancePayload(userWalletBalance);
-          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-          return res.end(JSON.stringify({
-            balance: depBp.balanceGhs,
-            balanceGhs: depBp.balanceGhs,
-            balanceDisplay: depBp.balanceDisplay,
-            formatted: `GHS ${depBp.balanceDisplay}`,
-            pesewas: depBp.pesewas
-          }));
-        }).catch(err => {
-          res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
-          return res.end(JSON.stringify({ bizCode: 40013, message: 'Request body too large' }));
-        });
+        } catch (_) { }
+        const depBp = buildBalancePayload(userWalletBalance);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify({
+          balance: depBp.balanceGhs,
+          balanceGhs: depBp.balanceGhs,
+          balanceDisplay: depBp.balanceDisplay,
+          formatted: `GHS ${depBp.balanceDisplay}`,
+          pesewas: depBp.pesewas
+        }));
+      }).catch(err => {
+        res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify({ bizCode: 40013, message: 'Request body too large' }));
+      });
       return;
     }
     const getBp = buildBalancePayload(userWalletBalance);

@@ -535,8 +535,11 @@ class SupabaseService {
   }
 
   _mapRowToStatement(row) {
-    const amt = Number(row.amount);
-    const bal = Number(row.after_bal);
+    const amtGhs = Number(row.amount || 0);
+    const balGhs = Number(row.after_bal || 0);
+    const SPORTY_SCALE = 10000;
+    const amtSporty = Math.round(amtGhs * SPORTY_SCALE);
+    const balSporty = Math.round(balGhs * SPORTY_SCALE);
     return {
       tradeId: row.trade_id,
       bizType: row.biz_type,
@@ -547,14 +550,14 @@ class SupabaseService {
       realOrderId: row.real_order_id,
       status: row.status,
       currency: row.currency || 'GHS',
-      amount: amt,
-      amountGhs: amt,
+      amount: amtSporty,
+      amountGhs: amtGhs,
       amountSign: row.amount_sign,
-      initAmount: Number(row.init_amount),
+      initAmount: amtSporty,
       feeType: row.fee_type || 0,
       feeAmount: Number(row.fee_amount || 0),
-      afterBal: bal,
-      afterBalGhs: bal,
+      afterBal: balSporty,
+      afterBalGhs: balGhs,
       payChId: row.pay_ch_id || 0,
       payAction: row.pay_action || 30,
       paySource: row.pay_source || 4,
