@@ -316,22 +316,14 @@ async function sendHubtelWithdrawalSms({ recipientPhone, amountGhs, updatedBalan
 
   if (HUBTEL_CLIENT_ID && HUBTEL_CLIENT_SECRET && recipientPhone) {
     try {
-      const authHeader = 'Basic ' + Buffer.from(`${HUBTEL_CLIENT_ID}:${HUBTEL_CLIENT_SECRET}`).toString('base64');
-      const postData = JSON.stringify({
-        From: HUBTEL_SENDER_ID,
-        To: recipientPhone,
-        Content: smsMessage
-      });
+      const encodedContent = encodeURIComponent(smsMessage);
+      const encodedFrom = encodeURIComponent(HUBTEL_SENDER_ID || 'ACSESUMAT');
+      const urlPath = `/v1/messages/send?clientsecret=${encodeURIComponent(HUBTEL_CLIENT_SECRET)}&clientid=${encodeURIComponent(HUBTEL_CLIENT_ID)}&from=${encodedFrom}&to=${encodeURIComponent(recipientPhone)}&content=${encodedContent}`;
 
       const options = {
-        hostname: 'smsc.hubtel.com',
-        path: '/v1/messages/send',
-        method: 'POST',
-        headers: {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(postData)
-        }
+        hostname: 'sms.hubtel.com',
+        path: urlPath,
+        method: 'GET'
       };
 
       const req = https.request(options, (res) => {
@@ -346,7 +338,6 @@ async function sendHubtelWithdrawalSms({ recipientPhone, amountGhs, updatedBalan
         console.error('[HUBTEL SMS ERROR]', e.message);
       });
 
-      req.write(postData);
       req.end();
     } catch (err) {
       console.error('[HUBTEL SMS EXCEPTION]', err.message);
