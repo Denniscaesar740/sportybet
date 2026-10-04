@@ -490,13 +490,25 @@ class SupabaseService {
       const res = await this.request('statements', {
         method: 'POST',
         prefer: 'resolution=merge-duplicates,return=representation',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
         body: row
       });
       if (res.ok) {
         console.log(`[SUPABASE STATEMENT SAVED] ${statement.tradeCode} (${statement.tradeId}) saved to Supabase`);
         return true;
+      } else if (res.status === 409) {
+        // Handle 409 Conflict gracefully by updating existing statement row via PATCH
+        const updateRes = await this.request(`statements?trade_id=eq.${encodeURIComponent(statement.tradeId)}`, {
+          method: 'PATCH',
+          body: row
+        });
+        if (updateRes.ok) {
+          console.log(`[SUPABASE STATEMENT UPDATED] ${statement.tradeCode} (${statement.tradeId}) updated on Supabase`);
+          return true;
+        }
+        console.error(`[SUPABASE STATEMENT UPDATE ERROR] HTTP ${updateRes.status}:`, updateRes.data);
       } else {
-        console.error(`[SUPABASE STATEMENT ERROR] Table 'statements' response: ${res.status || res.error}`);
+        console.error(`[SUPABASE STATEMENT ERROR] Table 'statements' response: ${res.status || res.error}`, res.data);
       }
     } catch (e) {
       console.error('[SUPABASE STATEMENT ERROR]', e.message);
