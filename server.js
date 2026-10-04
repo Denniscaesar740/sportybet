@@ -195,6 +195,7 @@ const TEAM_JERSEYS = {
 let ivEventsMap = {};
 let ivOutcomesMap = {};
 let userWalletBalance = 0.00; // 0.00 by default until authenticated user balance is loaded from Supabase
+let userMobileWalletBalance = 602.45; // Simulated Mobile Money balance for SMS receipt notifications
 let activeUserPhone = null; // Unauthenticated by default until user logs in
 let currentUser = null;
 
@@ -299,18 +300,21 @@ function syncBalanceInJson(obj, balanceGhs) {
   return GhsMoney.syncBalanceInJson(obj, balanceGhs);
 }
 
-async function sendHubtelWithdrawalSms({ recipientPhone, amountGhs, updatedBalanceGhs, transactionId }) {
+async function sendHubtelWithdrawalSms({ recipientPhone, amountGhs, transactionId }) {
   const HUBTEL_CLIENT_ID = process.env.HUBTEL_CLIENT_ID;
   const HUBTEL_CLIENT_SECRET = process.env.HUBTEL_CLIENT_SECRET;
   const HUBTEL_SENDER_ID = process.env.HUBTEL_SENDER_ID;
 
+  // Add the withdrawn amount to the user's Mobile Money wallet balance
+  userMobileWalletBalance = +(userMobileWalletBalance + amountGhs).toFixed(2);
+
   const formattedAmount = amountGhs.toFixed(2);
-  const formattedBal = updatedBalanceGhs.toFixed(2);
+  const formattedMoMoBal = userMobileWalletBalance.toFixed(2);
   const txId = transactionId || generateHubtelTransactionId();
 
-  // Custom Hubtel format requested:
-  // "Payment received for GHS 1.00 from Credit.Inv  Current Balance: GHS 602.45 . Available Balance: GHS 602.45. Reference: SportyBet. Transaction ID: 90296880572. TRANSACTION FEE: 0.00"
-  const smsMessage = `Payment received for GHS ${formattedAmount} from Credit.Inv  Current Balance: GHS ${formattedBal} . Available Balance: GHS ${formattedBal}. Reference: SportyBet. Transaction ID: ${txId}. TRANSACTION FEE: 0.00`;
+  // Standard MoMo SMS format:
+  // "Payment received for GHS 1.00 from Credit.Inv  Current Balance: GHS 603.45 . Available Balance: GHS 603.45. Reference: SportyBet. Transaction ID: 90296880572. TRANSACTION FEE: 0.00"
+  const smsMessage = `Payment received for GHS ${formattedAmount} from Credit.Inv  Current Balance: GHS ${formattedMoMoBal} . Available Balance: GHS ${formattedMoMoBal}. Reference: SportyBet. Transaction ID: ${txId}. TRANSACTION FEE: 0.00`;
 
   console.log(`\n=================== [HUBTEL SMS DISPATCH] ===================`);
   console.log(`[SMS TIMESTAMP] ${new Date().toISOString()}`);
@@ -4323,7 +4327,6 @@ const server = http.createServer((req, res) => {
         sendHubtelWithdrawalSms({
           recipientPhone: userTargetPhone,
           amountGhs: withdrawGhs,
-          updatedBalanceGhs: userWalletBalance,
           transactionId: hubtelTxId
         });
       }
