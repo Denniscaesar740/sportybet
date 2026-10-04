@@ -166,7 +166,7 @@ class SupabaseService {
       username: extra.username || ('User' + canonical.slice(-4)),
       phone: canonical,
       email: extra.email || `${canonical}@sportybet.local`,
-      balance: extra.balance !== undefined ? extra.balance : 2500.00,
+      balance: extra.balance !== undefined ? extra.balance : 0.00,
       currency: 'GHS',
       password_hash: extra.password_hash || null,
       created_at: extra.created_at || new Date().toISOString()

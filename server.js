@@ -194,7 +194,7 @@ const TEAM_JERSEYS = {
 
 let ivEventsMap = {};
 let ivOutcomesMap = {};
-let userWalletBalance = 2500.00;
+let userWalletBalance = 0.00; // 0.00 by default until authenticated user balance is loaded from Supabase
 let activeUserPhone = null; // Unauthenticated by default until user logs in
 let currentUser = null;
 
