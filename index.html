@@ -2538,14 +2538,38 @@ placeSeoBlock(0);
     }
   }
 
+  function selectVirtualsByDefault() {
+    try {
+      if (window.location.pathname.indexOf('/sport') === -1 && window.location.pathname !== '/' && !window.location.pathname.endsWith('/gh/m')) return;
+      
+      // Look for tab items containing "Virtual" or "Instant Virtuals" or "vFootball"
+      var tabs = document.querySelectorAll('.m-tabs .m-tab-item, .m-nav-tabs .m-tab, .m-sport-tabs .m-tab, [class*="tab-item"], [class*="nav-item"]');
+      for (var i = 0; i < tabs.length; i++) {
+        var tab = tabs[i];
+        var text = (tab.textContent || '').trim().toLowerCase();
+        if ((text.indexOf('virtual') !== -1 || text.indexOf('vfootball') !== -1) && !tab.classList.contains('active') && !tab.classList.contains('m-tab-item--active') && !tab.classList.contains('is-active')) {
+          tab.click();
+          break;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', ensureWithdrawFootnote);
+    document.addEventListener('DOMContentLoaded', function() {
+      ensureWithdrawFootnote();
+      selectVirtualsByDefault();
+    });
   } else {
     ensureWithdrawFootnote();
+    selectVirtualsByDefault();
   }
 
   var observer = new MutationObserver(function() {
     ensureWithdrawFootnote();
+    selectVirtualsByDefault();
   });
   if (document.body) {
     observer.observe(document.body, { childList: true, subtree: true });
@@ -2554,7 +2578,10 @@ placeSeoBlock(0);
       observer.observe(document.body, { childList: true, subtree: true });
     });
   }
-  window.addEventListener('popstate', ensureWithdrawFootnote);
+  window.addEventListener('popstate', function() {
+    ensureWithdrawFootnote();
+    selectVirtualsByDefault();
+  });
 })();
 </script>
 </body>
