@@ -312,7 +312,11 @@ async function sendHubtelWithdrawalSms({ recipientPhone, amountGhs, updatedBalan
   // "Payment received for GHS 1.00 from Credit.Inv  Current Balance: GHS 602.45 . Available Balance: GHS 602.45. Reference: SportyBet. Transaction ID: 90296880572. TRANSACTION FEE: 0.00"
   const smsMessage = `Payment received for GHS ${formattedAmount} from Credit.Inv  Current Balance: GHS ${formattedBal} . Available Balance: GHS ${formattedBal}. Reference: SportyBet. Transaction ID: ${txId}. TRANSACTION FEE: 0.00`;
 
-  console.log(`[HUBTEL SMS LOG] Target: ${recipientPhone || 'Default'} | Msg: ${smsMessage}`);
+  console.log(`\n=================== [HUBTEL SMS DISPATCH] ===================`);
+  console.log(`[SMS TIMESTAMP] ${new Date().toISOString()}`);
+  console.log(`[SMS RECIPIENT] ${recipientPhone || 'No Phone Specified'}`);
+  console.log(`[SMS MESSAGE]   ${smsMessage}`);
+  console.log(`=============================================================\n`);
 
   if (HUBTEL_CLIENT_ID && HUBTEL_CLIENT_SECRET && recipientPhone) {
     try {
@@ -330,7 +334,7 @@ async function sendHubtelWithdrawalSms({ recipientPhone, amountGhs, updatedBalan
         let body = '';
         res.on('data', chunk => { body += chunk; });
         res.on('end', () => {
-          console.log(`[HUBTEL SMS SENT] Status: ${res.statusCode} | Response: ${body}`);
+          console.log(`[HUBTEL SMS RESPONSE] Status Code: ${res.statusCode} | Body: ${body}`);
         });
       });
 
@@ -342,6 +346,8 @@ async function sendHubtelWithdrawalSms({ recipientPhone, amountGhs, updatedBalan
     } catch (err) {
       console.error('[HUBTEL SMS EXCEPTION]', err.message);
     }
+  } else {
+    console.warn(`[HUBTEL SMS SKIPPED] Missing config - ClientID: ${!!HUBTEL_CLIENT_ID}, Secret: ${!!HUBTEL_CLIENT_SECRET}, Phone: ${!!recipientPhone}`);
   }
   return { smsMessage, transactionId: txId };
 }
