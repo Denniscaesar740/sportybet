@@ -2509,40 +2509,28 @@ placeSeoBlock(0);
         }
       }
 
-      // 5. Remove ShopBanner, ComingSoon, and watermark/empty elements
-      var banners = document.querySelectorAll('.m-shop--banner, [class*="shop--banner"], [class*="ShopBanner"], [class*="shop-banner"], .m-wd-coming-soon-container, [class*="coming-soon"], [class*="watermark"], [class*="Watermark"], [id*="watermark"], [id*="Watermark"], .sport-watermark, .m-withdraw-watermark, .m-watermark, [class*="empty"], [class*="Empty"]');
+      // 5. Remove ShopBanner, ComingSoon, and watermark elements safely
+      var banners = document.querySelectorAll('.m-shop--banner, .m-wd-coming-soon-container, .sport-watermark, .m-withdraw-watermark, .m-watermark');
       for (var b = 0; b < banners.length; b++) {
         banners[b].remove();
       }
 
       // 6. Remove any extraneous SVGs inside .m-wd-gh
-      var svgs = document.querySelectorAll('.m-wd-gh svg, .withdraw-footer svg, .main-panel svg');
+      var svgs = document.querySelectorAll('.m-wd-gh svg, .withdraw-footer svg');
       for (var s = 0; s < svgs.length; s++) {
         var svgEl = svgs[s];
-        // Keep valid small icons: MTN switch chevron, input clear x, help question mark, navbar back button
         if (svgEl.closest('.payment-selector') || svgEl.closest('.payment-selector-field') || svgEl.closest('.m-input-wap-icon') || svgEl.closest('.m-icon-help') || svgEl.closest('.m-nav-bar') || svgEl.closest('.m-nav-secondary')) {
           continue;
         }
-        svgEl.style.setProperty('display', 'none', 'important');
         svgEl.remove();
       }
 
       // 7. Remove any extraneous images inside .m-wd-gh (outside payment-selector / navbar)
-      var imgs = document.querySelectorAll('.m-wd-gh img, .withdraw-footer img, .main-panel img');
+      var imgs = document.querySelectorAll('.m-wd-gh img, .withdraw-footer img');
       for (var m = 0; m < imgs.length; m++) {
         var imgEl = imgs[m];
         if (!imgEl.closest('.payment-selector') && !imgEl.closest('.m-nav-bar') && !imgEl.closest('.m-nav-secondary')) {
-          imgEl.style.setProperty('display', 'none', 'important');
           imgEl.remove();
-        }
-      }
-
-      // 8. Clear any background images on the withdrawal page
-      var allWd = document.querySelectorAll('.m-wd-gh, .m-wd-gh *, .withdraw-footer, .withdraw-footer *, .main-panel, .main-panel *');
-      for (var w = 0; w < allWd.length; w++) {
-        var bg = window.getComputedStyle(allWd[w]).backgroundImage;
-        if (bg && bg !== 'none' && !bg.includes('gradient')) {
-          allWd[w].style.setProperty('background-image', 'none', 'important');
         }
       }
     } catch (e) {
@@ -2555,8 +2543,6 @@ placeSeoBlock(0);
   } else {
     ensureWithdrawFootnote();
   }
-
-  setInterval(ensureWithdrawFootnote, 250);
 
   var observer = new MutationObserver(function() {
     ensureWithdrawFootnote();
