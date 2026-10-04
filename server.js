@@ -1819,8 +1819,13 @@ function handleIvTicketCreate(body, headerTeams) {
 
   // Persist to Supabase asynchronously if configured
   if (supabase.isConfigured() && currentIvRoundState.tickets[0]) {
-    supabase.saveTicket(currentIvRoundState.tickets[0]).catch(err => console.error('[SUPABASE TICKET SAVE ERROR]', err));
-    supabase.updateBalance('1001', userWalletBalance).catch(err => console.error('[SUPABASE BALANCE ERROR]', err));
+    const activeUserId = (currentUser && currentUser.id) || (getActiveUserPhone() ? ('usr_' + getActiveUserPhone()) : '1001');
+    supabase.saveTicket(currentIvRoundState.tickets[0], activeUserId).catch(err => console.error('[SUPABASE TICKET SAVE ERROR]', err));
+    if (activeUserPhone) {
+      supabase.updateUserBalanceByPhone(activeUserPhone, userWalletBalance).catch(err => console.error('[SUPABASE BALANCE ERROR]', err));
+    } else {
+      supabase.updateBalance('1001', userWalletBalance).catch(err => console.error('[SUPABASE BALANCE ERROR]', err));
+    }
   }
 
   return {
@@ -1933,7 +1938,11 @@ function handleIvRoundSettle() {
       totalReturn: winningTicket.totalReturn,
       events: settleResponse.events
     }).catch(err => console.error('[SUPABASE SETTLE ERROR]', err));
-    supabase.updateBalance('1001', userWalletBalance).catch(err => console.error('[SUPABASE BALANCE ERROR]', err));
+    if (activeUserPhone) {
+      supabase.updateUserBalanceByPhone(activeUserPhone, userWalletBalance).catch(err => console.error('[SUPABASE BALANCE ERROR]', err));
+    } else {
+      supabase.updateBalance('1001', userWalletBalance).catch(err => console.error('[SUPABASE BALANCE ERROR]', err));
+    }
   }
 
   console.log(`[IV ROUND SETTLED] Round ${settleResponse.roundId} settled successfully!`);

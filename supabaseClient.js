@@ -326,7 +326,7 @@ class SupabaseService {
   }
 
   // 3. Insert new ticket
-  async saveTicket(ticket) {
+  async saveTicket(ticket, userId = '1001') {
     if (!this.configured) return null;
     // IV ticket amounts use Sporty scale (GHS * 10000)
     const MAX_WIN_CAP_SPORTY = 1200000 * 10000;
@@ -334,7 +334,7 @@ class SupabaseService {
     const row = {
       id: ticket.ticketId,
       ticket_number: ticket.ticketNumber,
-      user_id: '1001',
+      user_id: userId || '1001',
       type: ticket.type || 'single',
       sport_id: ticket.sportId || 'sr:sport:1',
       total_stake: Number(ticket.totalStake || 0),
@@ -354,6 +354,7 @@ class SupabaseService {
     const res = await this.request('tickets', {
       method: 'POST',
       prefer: 'resolution=merge-duplicates,return=representation',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
       body: row
     });
     return res.ok ? res.data : null;
